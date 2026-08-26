@@ -1,4 +1,6 @@
+using System;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace NGONetworking
@@ -7,18 +9,33 @@ namespace NGONetworking
     /// Add this component to the same GameObject as
     /// the NetworkManager component.
     /// </summary>
-    public class NetworkManagerController : MonoBehaviour
+    public class NetworkManagerController : MonoBehaviour, IInitializable
     {
+        [Header("References")]
         [SerializeField] NetworkManager m_NetworkManager;
 
-        void Awake()
+        [Header("IInitializable")]
+        public bool IsInitialized { get; private set; }
+        public event Action OnInitializationStart;
+        public event Action<bool> OnInitializationFinish;
+
+        public async Awaitable InitializeAsync()
         {
+            OnInitializationStart?.Invoke();
+
             if (m_NetworkManager == null && !TryGetComponent(out m_NetworkManager))
             {
-                Debug.LogError($"[NetworkManagerController] Awake(): No NetworkManager found or assigned.");
+                Debug.LogError($"[NetworkManagerController] No NetworkManager found or assigned to m_NetworkManager.");
+
                 enabled = false;
-                return;
+                IsInitialized = false;
+                OnInitializationFinish?.Invoke(IsInitialized);
             }
+
+            IsInitialized = true;
+            enabled = true;
+            OnInitializationFinish?.Invoke(IsInitialized);
+            Debug.Log($"[NetworkManagerController] Initialized.");
         }
 
         void OnGUI()
