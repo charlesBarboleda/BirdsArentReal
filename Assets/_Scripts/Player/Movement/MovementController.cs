@@ -117,11 +117,8 @@ public class MovementController : NetworkBehaviour, IInitializable
         }
 
         Vector2 input = _moveInput.Value;
-        Vector3 horizontalMove = new(input.x, 0f, input.y);
-        if (horizontalMove.sqrMagnitude > 1f)
-            horizontalMove.Normalize();
+        Vector3 desiredVelocity = GetDesiredVelocity(input);
 
-        Vector3 desiredVelocity = horizontalMove * _moveSpeed;
         Vector3 velocity = _rigidbody.linearVelocity;
         velocity.x = desiredVelocity.x;
         velocity.z = desiredVelocity.z;
@@ -131,6 +128,30 @@ public class MovementController : NetworkBehaviour, IInitializable
             _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.VelocityChange);
 
         _jumpRequested = false;
+    }
+
+    // Builds world-space velocity from local input (x = strafe, y = forward/
+    // back) relative to this transform's current facing, rather than raw
+    // world axes - so W always moves the character toward wherever it's
+    // currently facing. Forward/right are flattened to the horizontal plane
+    // before use so movement stays level even if the Rigidbody's rotation
+    // ever picks up pitch/roll (e.g. from a collision), rather than assuming
+    // a guaranteed yaw-only transform.
+    Vector3 GetDesiredVelocity(Vector2 input)
+    {
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Vector3 right = transform.right;
+        right.y = 0f;
+        right.Normalize();
+
+        Vector3 moveDirection = (right * input.x) + (forward * input.y);
+        if (moveDirection.sqrMagnitude > 1f)
+            moveDirection.Normalize();
+
+        return moveDirection * _moveSpeed;
     }
 
     void UpdateGroundedState()
