@@ -554,6 +554,7 @@ MonoBehaviour:
   _inputManager: {fileID: 0}
   _rigidbody: {fileID: 1379250773509041084}
   _groundCheck: {fileID: 1503634196181478207}
+  _modelController: {fileID: 0}
   _moveSpeed: 5
   _jumpForce: 6
   _groundCheckRadius: 0.15
@@ -752,6 +753,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8552b6f4ab70d844198e0a5084268b92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CapsuleManModelController
+  ShowTopMostFoldoutHeaderGroup: 1
+  _inputManager: {fileID: 0}
   _body: {fileID: 161029704153543245}
   _rightShoulder: {fileID: 8398904323368360971}
   _rightShoulderAnchor: {fileID: 9018966278470017779}
@@ -778,6 +781,10 @@ MonoBehaviour:
   _bodyWobbleStrength: 0.15
   _bodyWobbleSpeed: 1
   _distanceFromGround: 0.25
+  _tiltAngle: 20
+  _tiltSpeed: 10
+  _rotationSpeed: 10
+  _resetRotationSpeed: 5
 --- !u!1 &4985207940837957064
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,8 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using InputSystem;
+using Unity.Netcode;
 
-public class CapsuleManModelController : MonoBehaviour
+public class CapsuleManModelController : NetworkBehaviour
 {
+    [Header("Script References")]
+    [SerializeField] InputManager _inputManager;
+
     [Header("Main Body")]
     [SerializeField] Transform _body;
 
@@ -40,21 +45,65 @@ public class CapsuleManModelController : MonoBehaviour
 
     readonly Dictionary<Transform, Vector3> _wobbleOrigins = new();
 
-    void FixedUpdate()
+    [Header("Model Tilt Settings")]
+    [SerializeField] float _tiltAngle = 15f;
+    public float GetTiltAngle() => _tiltAngle;
+    [SerializeField] float _tiltSpeed = 10f;
+    public float GetTiltSpeed() => _tiltSpeed;
+
+    [Header("Model Direction Rotation Settings")]
+    [SerializeField] float _rotationSpeed = 10f;
+    [SerializeField] float _resetRotationSpeed = 5f;
+
+    override public void OnNetworkSpawn()
     {
-        // TestRotateRightShoulder();
-        WobbleBothArms(avgWobbleStrength: _avgArmsWobbleStrength, avgWobbleSpeed: _avgArmsWobbleSpeed);
-        WobbleBody(wobbleStrength: _bodyWobbleStrength, wobbleSpeed: _bodyWobbleSpeed);
+        if (!IsOwner)
+        {
+            enabled = false;
+            return;
+        }
+
+        if (_inputManager == null)
+            _inputManager = InputManager.Instance;
+
+        if (_inputManager == null)
+            Debug.LogError("InputManager reference is missing in CapsuleManModelController.");
     }
 
-    // [SerializeField] Vector3 _axis;
-    // [SerializeField] float _rotationSpeed;
-    // void TestRotateRightShoulder()
-    // {
-    //     if (!_rightShoulder || !_rightShoulderAnchor) return;
+    void Update()
+    {
+        WobbleBothArms(avgWobbleStrength: _avgArmsWobbleStrength, avgWobbleSpeed: _avgArmsWobbleSpeed);
+        WobbleBody(wobbleStrength: _bodyWobbleStrength, wobbleSpeed: _bodyWobbleSpeed);
 
-    //     _rightShoulder.RotateAround(_rightShoulderAnchor.position, _axis, _rotationSpeed);
-    // }
+        if (_inputManager.MoveInput.sqrMagnitude > 0f)
+        {
+            TiltModel(tiltAngle: _tiltAngle, tiltSpeed: _tiltSpeed);
+            RotateModelTowardsMoveDirection(moveInput: _inputManager.MoveInput);
+        }
+        else
+        {
+            TiltModel(tiltAngle: 0f, tiltSpeed: _tiltSpeed);
+            RotateModelTowardsMoveDirection(moveInput: Vector2.zero);
+        }
+    }
+
+    void RotateModelTowardsMoveDirection(Vector2 moveInput)
+    {
+        if (_body == null) return;
+        if (moveInput.sqrMagnitude <= 0f)
+        {
+            Quaternion _targetRotation = Quaternion.Euler(0f, _body.localRotation.eulerAngles.y, 0f);
+            _body.localRotation = Quaternion.Slerp(_body.localRotation, _targetRotation, _resetRotationSpeed * Time.deltaTime);
+        }
+
+        Vector3 localTargetDirection = new(moveInput.x, 0f, moveInput.y);
+        Quaternion localTargetRotation = Quaternion.LookRotation(localTargetDirection, Vector3.up);
+
+        Vector3 currentEuler = _body.localRotation.eulerAngles;
+        Quaternion targetRotation = Quaternion.Euler(currentEuler.x, localTargetRotation.eulerAngles.y, currentEuler.z);
+
+        _body.localRotation = Quaternion.Slerp(_body.localRotation, targetRotation, _rotationSpeed * Time.deltaTime);
+    }
 
     void WobbleBody(float wobbleStrength, float wobbleSpeed)
     {
@@ -133,4 +182,25 @@ public class CapsuleManModelController : MonoBehaviour
         objectTransform.localPosition = origin + new Vector3(0, yOffset, 0);
     }
 
+    public void TiltModel(float tiltAngle, float tiltSpeed)
+    {
+        if (_body == null) return;
+        if (_inputManager == null)
+        {
+            _inputManager = InputManager.Instance;
+            if (_inputManager == null) return;
+        }
+
+        Quaternion targetRotation = Quaternion.Euler(tiltAngle, _body.localRotation.eulerAngles.y, 0f);
+        _body.localRotation = Quaternion.Slerp(_body.localRotation, targetRotation, tiltSpeed * Time.fixedDeltaTime);
+    }
+
+}
+
+public enum MoveDirection
+{
+    Forward,
+    Backward,
+    Left,
+    Right
 }

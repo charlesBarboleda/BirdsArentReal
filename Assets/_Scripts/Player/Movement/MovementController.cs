@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using InputSystem;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +9,7 @@ public class MovementController : NetworkBehaviour, IInitializable
     [SerializeField] InputManager _inputManager;
     [SerializeField] Rigidbody _rigidbody;
     [SerializeField] Transform _groundCheck;
+    [SerializeField] CapsuleManModelController _modelController;
 
     [Header("Movement")]
     [SerializeField] float _moveSpeed = 5f;
@@ -36,7 +36,6 @@ public class MovementController : NetworkBehaviour, IInitializable
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Owner);
 
-    // Server controls this. Clients can read it.
     readonly NetworkVariable<bool> _movementLockedNetwork = new(
         false,
         NetworkVariableReadPermission.Everyone,

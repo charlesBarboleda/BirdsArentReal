@@ -67,7 +67,9 @@ public class RotationController : NetworkBehaviour, IInitializable
         // Only the local owner should ever render from their own camera -
         // remote copies would otherwise fight for the audio listener/output.
         if (!IsOwner)
+        {
             _playerCamera.gameObject.SetActive(false);
+        }
 
         _ = InitializeAsync();
     }
