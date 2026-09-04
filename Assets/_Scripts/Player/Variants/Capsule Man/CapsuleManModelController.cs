@@ -97,12 +97,15 @@ public class CapsuleManModelController : NetworkBehaviour
         }
 
         Vector3 localTargetDirection = new(moveInput.x, 0f, moveInput.y);
-        Quaternion localTargetRotation = Quaternion.LookRotation(localTargetDirection, Vector3.up);
+        if (localTargetDirection.sqrMagnitude > 0f)
+        {
+            Quaternion localTargetRotation = Quaternion.LookRotation(localTargetDirection, Vector3.up);
+            Vector3 currentEuler = _body.localRotation.eulerAngles;
+            Quaternion targetRotation = Quaternion.Euler(currentEuler.x, localTargetRotation.eulerAngles.y, currentEuler.z);
 
-        Vector3 currentEuler = _body.localRotation.eulerAngles;
-        Quaternion targetRotation = Quaternion.Euler(currentEuler.x, localTargetRotation.eulerAngles.y, currentEuler.z);
+            _body.localRotation = Quaternion.Slerp(_body.localRotation, targetRotation, _rotationSpeed * Time.deltaTime);
+        }
 
-        _body.localRotation = Quaternion.Slerp(_body.localRotation, targetRotation, _rotationSpeed * Time.deltaTime);
     }
 
     void WobbleBody(float wobbleStrength, float wobbleSpeed)
