@@ -12,18 +12,12 @@ public class FoodStandManager : InteractableStationBase
     public override void OnNPCEnter(NPCActionController npc, Transform slot)
     {
         base.OnNPCEnter(npc, slot);
-        // Hook for stand-specific behaviour later - e.g. spawn a held food
-        // prop or play a "browsing" idle animation.
+        npc.PlayTalkAnimation();
     }
 
     /// <summary>Always face the stand itself, regardless of how each slot happens to be rotated.</summary>
     public override Quaternion GetFacingRotation(Transform slot)
     {
-        Vector3 direction = transform.position - slot.position;
-        direction.y = 0f; // stay upright - only rotate around the vertical axis
-
-        return direction.sqrMagnitude > 0.0001f
-            ? Quaternion.LookRotation(direction)
-            : slot.rotation; // degenerate case (slot sitting right on the stand's pivot) - fall back
+        return FacingUtility.LookAtFlat(slot.position, transform.position, slot.rotation);
     }
 }

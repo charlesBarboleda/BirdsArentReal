@@ -894,12 +894,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCActionController
   _navAgentController: {fileID: -5632852678116110924}
+  _animationController: {fileID: -8218050944760836530}
   _wanderWeight: 0.4
   _benchWeight: 0.3
   _foodStandWeight: 0.3
+  _talkWeight: 0.2
   _wanderZoneSearchRadius: 0
   _wanderIdleDuration: {x: 2, y: 5}
   _stationSearchRadius: 25
+  _conversationSearchRadius: 15
+  _conversationDistance: 1
+  _minConversationDuration: 5
 --- !u!114 &-8218050944760836530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -924,8 +929,16 @@ MonoBehaviour:
   - {fileID: 7400000, guid: c3a6784310405f84f8023ce7fbbe95e9, type: 2}
   - {fileID: 7400000, guid: e52c63446fad6f14aab195ddc4dfdaa3, type: 2}
   - {fileID: 7400000, guid: 75da70bc43a219c4c9ce56b4c8204bd3, type: 2}
+  _talkAnimations:
+  - {fileID: 7400000, guid: 2521762c53ed76645b2d45513cf394d8, type: 2}
+  - {fileID: 7400000, guid: 035b46ca3d3771a4f807b7f971d2fb27, type: 2}
+  - {fileID: 7400000, guid: 86ce783bbc089e0459b7a59c61b63db0, type: 2}
+  - {fileID: 7400000, guid: 4a2bf11e50e26da4ea7f8234bc2a74a4, type: 2}
+  - {fileID: 7400000, guid: 78946def076da9640baf71796b9dd491, type: 2}
+  - {fileID: 7400000, guid: d642b1ed50a38e645861b917e9433301, type: 2}
   _walkClipName: Walk
   _idleClipName: Idle
+  _talkClipName: Talk
   _speedLerpSpeed: 8
 --- !u!1 &1259445759147048
 GameObject:
