@@ -49,6 +49,9 @@ public class NPCAnimationController : MonoBehaviour
     [Tooltip("Higher = snappier transition between idle and walk.")]
     [SerializeField] float _speedLerpSpeed = 8f;
 
+    [Header("Static NPC")]
+    [SerializeField] bool _isStaticNPC = false;
+
     static readonly int SpeedParam = Animator.StringToHash("Speed");
     static readonly int TalkTrigger = Animator.StringToHash("Talk");
     static readonly int IsSittingParam = Animator.StringToHash("IsSitting");
@@ -62,9 +65,12 @@ public class NPCAnimationController : MonoBehaviour
             Debug.LogError($"[{nameof(NPCAnimationController)}] Animator missing from '{name}'.", this);
         }
 
-        if (_navAgentController == null && !TryGetComponent(out _navAgentController))
+        if (!_isStaticNPC)
         {
-            Debug.LogError($"[{nameof(NPCAnimationController)}] NAVAgentController missing from '{name}'.", this);
+            if (_navAgentController == null && !TryGetComponent(out _navAgentController))
+            {
+                Debug.LogError($"[{nameof(NPCAnimationController)}] NAVAgentController missing from '{name}'.", this);
+            }
         }
 
         SetupAnimationOverrides();
@@ -91,6 +97,8 @@ public class NPCAnimationController : MonoBehaviour
         _animator.runtimeAnimatorController = _overrideController;
     }
 
+    Coroutine _continuousTalkCoroutine;
+
     /// <summary>
     /// Swaps in a random talk clip and fires the one-shot Idle -> Talk ->
     /// Idle transition. Returns the chosen clip's length in seconds (0 if
@@ -106,6 +114,37 @@ public class NPCAnimationController : MonoBehaviour
         _animator.SetTrigger(TalkTrigger);
 
         return clip.length;
+    }
+
+    /// <summary>
+    /// Starts playing randomized talk animations continuously in a loop until StopContinuousTalk() is called.
+    /// </summary>
+    public void StartContinuousTalk()
+    {
+        if (_continuousTalkCoroutine != null) return;
+        _continuousTalkCoroutine = StartCoroutine(ContinuousTalkRoutine());
+    }
+
+    /// <summary>
+    /// Stops playing continuous randomized talk animations, returning to idle.
+    /// </summary>
+    public void StopContinuousTalk()
+    {
+        if (_continuousTalkCoroutine != null)
+        {
+            StopCoroutine(_continuousTalkCoroutine);
+            _continuousTalkCoroutine = null;
+        }
+    }
+
+    System.Collections.IEnumerator ContinuousTalkRoutine()
+    {
+        while (true)
+        {
+            float duration = PlayRandomTalk();
+            if (duration <= 0f) duration = 3f;
+            yield return new WaitForSeconds(duration);
+        }
     }
 
     /// <summary>

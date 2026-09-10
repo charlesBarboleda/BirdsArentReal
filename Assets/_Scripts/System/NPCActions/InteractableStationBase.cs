@@ -22,6 +22,8 @@ public abstract class InteractableStationBase : MonoBehaviour
 
     public abstract StationType StationType { get; }
     public bool HasAvailableSlot => _slots != null && _occupants.Count < _slots.Length;
+    public int OccupantCount => _occupants.Count;
+    public bool HasOccupants => _occupants.Count > 0;
 
     protected virtual void OnEnable()
     {
