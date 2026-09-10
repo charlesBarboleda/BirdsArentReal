@@ -31,10 +31,19 @@ public class NPCAnimationController : MonoBehaviour
     [Tooltip("Picked at random every time PlayRandomTalk() is called, not just once on spawn.")]
     [SerializeField] List<AnimationClip> _talkAnimations = new();
 
+    [Header("Sitting Variants")]
+    [Tooltip("Picked at random every time StartSitting() is called.")]
+    [SerializeField] List<AnimationClip> _sittingAnimations = new();
+
+    [Header("Ground Sitting Variants")]
+    [Tooltip("Picked at random every time StartGroundSitting() is called.")]
+    [SerializeField] List<AnimationClip> _groundSittingAnimations = new();
+
     [Tooltip("Must match the exact name of each placeholder clip in the base controller - that name is the key AnimatorOverrideController uses to swap it.")]
     [SerializeField] string _walkClipName = "Walk";
     [SerializeField] string _idleClipName = "Idle";
     [SerializeField] string _talkClipName = "Talk";
+    [SerializeField] string _sittingClipName = "Sit";
 
     [Header("Blending")]
     [Tooltip("Higher = snappier transition between idle and walk.")]
@@ -42,6 +51,7 @@ public class NPCAnimationController : MonoBehaviour
 
     static readonly int SpeedParam = Animator.StringToHash("Speed");
     static readonly int TalkTrigger = Animator.StringToHash("Talk");
+    static readonly int IsSittingParam = Animator.StringToHash("IsSitting");
 
     AnimatorOverrideController _overrideController;
 
@@ -62,7 +72,9 @@ public class NPCAnimationController : MonoBehaviour
 
     void SetupAnimationOverrides()
     {
-        if (_animator == null || _baseController == null) return;
+        if (_overrideController != null) return;
+        if (_animator == null && !TryGetComponent(out _animator)) return;
+        if (_baseController == null) return;
 
         _overrideController = new AnimatorOverrideController(_baseController);
 
@@ -86,6 +98,7 @@ public class NPCAnimationController : MonoBehaviour
     /// </summary>
     public float PlayRandomTalk()
     {
+        if (_overrideController == null) SetupAnimationOverrides();
         if (_animator == null || _overrideController == null || _talkAnimations.Count == 0) return 0f;
 
         var clip = _talkAnimations[Random.Range(0, _talkAnimations.Count)];
@@ -93,6 +106,49 @@ public class NPCAnimationController : MonoBehaviour
         _animator.SetTrigger(TalkTrigger);
 
         return clip.length;
+    }
+
+    /// <summary>
+    /// Swaps in a random sitting clip and transitions into the sitting state.
+    /// </summary>
+    public void StartSitting()
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_animator == null) return;
+
+        if (_overrideController != null && _sittingAnimations.Count > 0)
+        {
+            var clip = _sittingAnimations[Random.Range(0, _sittingAnimations.Count)];
+            _overrideController[_sittingClipName] = clip;
+        }
+
+        _animator.SetBool(IsSittingParam, true);
+    }
+
+    /// <summary>
+    /// Swaps in a random ground sitting clip and transitions into the sitting state.
+    /// </summary>
+    public void StartGroundSitting()
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_animator == null) return;
+
+        if (_overrideController != null && _groundSittingAnimations.Count > 0)
+        {
+            var clip = _groundSittingAnimations[Random.Range(0, _groundSittingAnimations.Count)];
+            _overrideController[_sittingClipName] = clip;
+        }
+
+        _animator.SetBool(IsSittingParam, true);
+    }
+
+    /// <summary>
+    /// Transitions out of the sitting state back to idle.
+    /// </summary>
+    public void StopSitting()
+    {
+        if (_animator == null) return;
+        _animator.SetBool(IsSittingParam, false);
     }
 
     void Update()

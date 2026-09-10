@@ -18,13 +18,21 @@ public class BenchManager : InteractableStationBase
     public override void OnNPCEnter(NPCActionController npc, Transform slot)
     {
         base.OnNPCEnter(npc, slot);
-        GetSeatAnimator(slot).SetBool(IsSittingHash, true);
+        if (npc != null)
+        {
+            npc.StartSitting();
+        }
+        GetSeatAnimator(slot)?.SetBool(IsSittingHash, true);
     }
 
     public override void OnNPCExit(NPCActionController npc, Transform slot)
     {
         base.OnNPCExit(npc, slot);
-        GetSeatAnimator(slot).SetBool(IsSittingHash, false);
+        if (npc != null)
+        {
+            npc.StopSitting();
+        }
+        GetSeatAnimator(slot)?.SetBool(IsSittingHash, false);
     }
 
     Animator GetSeatAnimator(Transform slot)

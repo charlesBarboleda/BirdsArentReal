@@ -13,7 +13,8 @@ enum NPCActionType
     Wander,
     Bench,
     FoodStand,
-    Talk
+    Talk,
+    PicnicSpot
 }
 
 /// <summary>
@@ -31,10 +32,11 @@ public class NPCActionController : MonoBehaviour
     [SerializeField] NPCAnimationController _animationController;
 
     [Header("Action Weights (relative - don't need to sum to 1)")]
-    [SerializeField] float _wanderWeight = 0.4f;
+    [SerializeField] float _wanderWeight = 0.35f;
     [SerializeField] float _benchWeight = 0.2f;
-    [SerializeField] float _foodStandWeight = 0.2f;
-    [SerializeField] float _talkWeight = 0.2f;
+    [SerializeField] float _foodStandWeight = 0.15f;
+    [SerializeField] float _talkWeight = 0.15f;
+    [SerializeField] float _picnicWeight = 0.15f;
 
     [Header("Wander Settings")]
     [Tooltip("Max distance to look for a WanderZone. 0 = no limit (any registered zone is fair game).")]
@@ -57,6 +59,7 @@ public class NPCActionController : MonoBehaviour
     bool _isBusy; // true while reserved for a conversation, either as initiator or partner
 
     public NPCState CurrentState { get; private set; } = NPCState.Idle;
+    public NPCAnimationController AnimationController => _animationController;
 
     /// <summary>True when this NPC can be pulled into a conversation right now.</summary>
     public bool IsAvailableForConversation => !_isBusy && CurrentState == NPCState.Idle;
@@ -85,6 +88,8 @@ public class NPCActionController : MonoBehaviour
         // reserved slot permanently unavailable to everyone else.
         if (_reservedStation == null) return;
 
+        StopSitting();
+        _navAgentController?.ResumeNavigation();
         _reservedStation.ReleaseSlot(this);
         _reservedStation = null;
     }
@@ -104,6 +109,9 @@ public class NPCActionController : MonoBehaviour
                 case NPCActionType.FoodStand:
                     yield return PerformStationAction(StationType.FoodStand);
                     break;
+                case NPCActionType.PicnicSpot:
+                    yield return PerformStationAction(StationType.PicnicSpot);
+                    break;
                 case NPCActionType.Talk:
                     yield return PerformTalkToNPC();
                     break;
@@ -116,7 +124,7 @@ public class NPCActionController : MonoBehaviour
 
     NPCActionType PickRandomAction()
     {
-        float total = _wanderWeight + _benchWeight + _foodStandWeight + _talkWeight;
+        float total = _wanderWeight + _benchWeight + _foodStandWeight + _talkWeight + _picnicWeight;
         if (total <= 0f) return NPCActionType.Wander;
 
         float roll = Random.Range(0f, total);
@@ -127,7 +135,10 @@ public class NPCActionController : MonoBehaviour
         if (roll < _benchWeight) return NPCActionType.Bench;
         roll -= _benchWeight;
 
-        return roll < _foodStandWeight ? NPCActionType.FoodStand : NPCActionType.Talk;
+        if (roll < _foodStandWeight) return NPCActionType.FoodStand;
+        roll -= _foodStandWeight;
+
+        return roll < _talkWeight ? NPCActionType.Talk : NPCActionType.PicnicSpot;
     }
 
     IEnumerator PerformStationAction(StationType type)
@@ -147,13 +158,14 @@ public class NPCActionController : MonoBehaviour
 
         yield return WaitUntilArrived();
 
-        transform.rotation = station.GetFacingRotation(slot);
+        _navAgentController.StopAndSnap(slot.position, station.GetFacingRotation(slot));
         CurrentState = NPCState.PerformingAction;
         station.OnNPCEnter(this, slot);
 
         yield return new WaitForSeconds(duration);
 
         station.OnNPCExit(this, slot);
+        _navAgentController.ResumeNavigation();
         station.ReleaseSlot(this);
         _reservedStation = null;
 
@@ -241,4 +253,13 @@ public class NPCActionController : MonoBehaviour
 
     /// <summary>Plays one random non-looping talk animation, if this NPC has an NPCAnimationController. Returns the clip length, or 0 if none played.</summary>
     public float PlayTalkAnimation() => _animationController != null ? _animationController.PlayRandomTalk() : 0f;
+
+    /// <summary>Puts this NPC into the sitting animation state with a random sitting animation variant.</summary>
+    public void StartSitting() => _animationController?.StartSitting();
+
+    /// <summary>Puts this NPC into the ground sitting animation state with a random ground sitting animation variant.</summary>
+    public void StartGroundSitting() => _animationController?.StartGroundSitting();
+
+    /// <summary>Transitions this NPC out of the sitting animation state.</summary>
+    public void StopSitting() => _animationController?.StopSitting();
 }

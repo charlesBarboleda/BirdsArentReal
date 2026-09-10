@@ -1,5 +1,6 @@
 public enum StationType
 {
     Bench,
-    FoodStand
+    FoodStand,
+    PicnicSpot
 }
