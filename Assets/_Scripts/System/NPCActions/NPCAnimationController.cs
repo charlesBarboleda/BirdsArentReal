@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 
 /// <summary>
@@ -9,13 +12,15 @@ using UnityEngine;
 /// swapped in on demand via PlayRandomTalk() instead, since they should
 /// vary every time an NPC talks rather than being fixed once for its
 /// lifetime.
+/// Synchronized across the network via NGO NetworkVariables and NetworkAnimator.
 /// </summary>
 [RequireComponent(typeof(Animator))]
-public class NPCAnimationController : MonoBehaviour
+public class NPCAnimationController : NetworkBehaviour
 {
     [Header("Setup")]
     [SerializeField] Animator _animator;
     [SerializeField] NAVAgentController _navAgentController;
+    [SerializeField] NetworkAnimator _networkAnimator;
 
     [Header("Base Controller")]
     [Tooltip("Shared Animator Controller with an Idle <-> Walk transition driven by 'Speed', plus a one-shot Idle -> Talk -> Idle transition driven by the 'Talk' trigger.")]
@@ -57,12 +62,25 @@ public class NPCAnimationController : MonoBehaviour
     static readonly int IsSittingParam = Animator.StringToHash("IsSitting");
 
     AnimatorOverrideController _overrideController;
+    Coroutine _continuousTalkCoroutine;
+
+    // Network-synchronized animation selection indices so all clients display identical animations
+    readonly NetworkVariable<int> _idleIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    readonly NetworkVariable<int> _walkIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    readonly NetworkVariable<int> _talkIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    readonly NetworkVariable<int> _sitIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    readonly NetworkVariable<bool> _isGroundSitting = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     void Awake()
     {
         if (_animator == null && !TryGetComponent(out _animator))
         {
             Debug.LogError($"[{nameof(NPCAnimationController)}] Animator missing from '{name}'.", this);
+        }
+
+        if (_networkAnimator == null)
+        {
+            TryGetComponent(out _networkAnimator);
         }
 
         if (!_isStaticNPC)
@@ -76,6 +94,118 @@ public class NPCAnimationController : MonoBehaviour
         SetupAnimationOverrides();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        _idleIndex.OnValueChanged += OnIdleIndexChanged;
+        _walkIndex.OnValueChanged += OnWalkIndexChanged;
+        _talkIndex.OnValueChanged += OnTalkIndexChanged;
+        _sitIndex.OnValueChanged += OnSitIndexChanged;
+        _isGroundSitting.OnValueChanged += OnGroundSittingChanged;
+
+        if (IsServer)
+        {
+            if (_idleAnimations.Count > 0 && _idleIndex.Value < 0)
+            {
+                _idleIndex.Value = Random.Range(0, _idleAnimations.Count);
+            }
+
+            if (_walkAnimations.Count > 0 && _walkIndex.Value < 0)
+            {
+                _walkIndex.Value = Random.Range(0, _walkAnimations.Count);
+            }
+        }
+
+        // Apply synchronized state on spawn
+        if (_idleIndex.Value >= 0 && _idleIndex.Value < _idleAnimations.Count)
+        {
+            ApplyIdleClip(_idleIndex.Value);
+        }
+
+        if (_walkIndex.Value >= 0 && _walkIndex.Value < _walkAnimations.Count)
+        {
+            ApplyWalkClip(_walkIndex.Value);
+        }
+
+        if (_talkIndex.Value >= 0 && _talkIndex.Value < _talkAnimations.Count)
+        {
+            ApplyTalkClip(_talkIndex.Value);
+        }
+
+        if (_sitIndex.Value >= 0)
+        {
+            ApplySitClip(_sitIndex.Value, _isGroundSitting.Value);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        _idleIndex.OnValueChanged -= OnIdleIndexChanged;
+        _walkIndex.OnValueChanged -= OnWalkIndexChanged;
+        _talkIndex.OnValueChanged -= OnTalkIndexChanged;
+        _sitIndex.OnValueChanged -= OnSitIndexChanged;
+        _isGroundSitting.OnValueChanged -= OnGroundSittingChanged;
+
+        StopContinuousTalk();
+
+        base.OnNetworkDespawn();
+    }
+
+    void OnIdleIndexChanged(int previousValue, int newValue) => ApplyIdleClip(newValue);
+    void OnWalkIndexChanged(int previousValue, int newValue) => ApplyWalkClip(newValue);
+    void OnTalkIndexChanged(int previousValue, int newValue) => ApplyTalkClip(newValue);
+    void OnSitIndexChanged(int previousValue, int newValue) => ApplySitClip(newValue, _isGroundSitting.Value);
+    void OnGroundSittingChanged(bool previousValue, bool newValue) => ApplySitClip(_sitIndex.Value, newValue);
+
+    void ApplyIdleClip(int index)
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_overrideController != null && index >= 0 && index < _idleAnimations.Count)
+        {
+            _overrideController[_idleClipName] = _idleAnimations[index];
+        }
+    }
+
+    void ApplyWalkClip(int index)
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_overrideController != null && index >= 0 && index < _walkAnimations.Count)
+        {
+            _overrideController[_walkClipName] = _walkAnimations[index];
+        }
+    }
+
+    void ApplyTalkClip(int index)
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_overrideController != null && index >= 0 && index < _talkAnimations.Count)
+        {
+            _overrideController[_talkClipName] = _talkAnimations[index];
+        }
+    }
+
+    void ApplySitClip(int index, bool groundSitting)
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_overrideController == null || index < 0) return;
+
+        if (groundSitting)
+        {
+            if (index < _groundSittingAnimations.Count)
+            {
+                _overrideController[_sittingClipName] = _groundSittingAnimations[index];
+            }
+        }
+        else
+        {
+            if (index < _sittingAnimations.Count)
+            {
+                _overrideController[_sittingClipName] = _sittingAnimations[index];
+            }
+        }
+    }
+
     void SetupAnimationOverrides()
     {
         if (_overrideController != null) return;
@@ -86,18 +216,16 @@ public class NPCAnimationController : MonoBehaviour
 
         if (_idleAnimations.Count > 0)
         {
-            _overrideController[_idleClipName] = _idleAnimations[Random.Range(0, _idleAnimations.Count)];
+            _overrideController[_idleClipName] = _idleAnimations[0];
         }
 
         if (_walkAnimations.Count > 0)
         {
-            _overrideController[_walkClipName] = _walkAnimations[Random.Range(0, _walkAnimations.Count)];
+            _overrideController[_walkClipName] = _walkAnimations[0];
         }
 
         _animator.runtimeAnimatorController = _overrideController;
     }
-
-    Coroutine _continuousTalkCoroutine;
 
     /// <summary>
     /// Swaps in a random talk clip and fires the one-shot Idle -> Talk ->
@@ -109,9 +237,24 @@ public class NPCAnimationController : MonoBehaviour
         if (_overrideController == null) SetupAnimationOverrides();
         if (_animator == null || _overrideController == null || _talkAnimations.Count == 0) return 0f;
 
-        var clip = _talkAnimations[Random.Range(0, _talkAnimations.Count)];
+        int selectedIndex = Random.Range(0, _talkAnimations.Count);
+
+        if (IsSpawned && IsServer)
+        {
+            _talkIndex.Value = selectedIndex;
+        }
+
+        var clip = _talkAnimations[selectedIndex];
         _overrideController[_talkClipName] = clip;
-        _animator.SetTrigger(TalkTrigger);
+
+        if (_networkAnimator != null && IsSpawned)
+        {
+            _networkAnimator.SetTrigger(TalkTrigger);
+        }
+        else
+        {
+            _animator.SetTrigger(TalkTrigger);
+        }
 
         return clip.length;
     }
@@ -137,7 +280,7 @@ public class NPCAnimationController : MonoBehaviour
         }
     }
 
-    System.Collections.IEnumerator ContinuousTalkRoutine()
+    IEnumerator ContinuousTalkRoutine()
     {
         while (true)
         {
@@ -155,9 +298,16 @@ public class NPCAnimationController : MonoBehaviour
         if (_overrideController == null) SetupAnimationOverrides();
         if (_animator == null) return;
 
-        if (_overrideController != null && _sittingAnimations.Count > 0)
+        if (_sittingAnimations.Count > 0)
         {
-            var clip = _sittingAnimations[Random.Range(0, _sittingAnimations.Count)];
+            int selectedIndex = Random.Range(0, _sittingAnimations.Count);
+            if (IsSpawned && IsServer)
+            {
+                _isGroundSitting.Value = false;
+                _sitIndex.Value = selectedIndex;
+            }
+
+            var clip = _sittingAnimations[selectedIndex];
             _overrideController[_sittingClipName] = clip;
         }
 
@@ -172,9 +322,16 @@ public class NPCAnimationController : MonoBehaviour
         if (_overrideController == null) SetupAnimationOverrides();
         if (_animator == null) return;
 
-        if (_overrideController != null && _groundSittingAnimations.Count > 0)
+        if (_groundSittingAnimations.Count > 0)
         {
-            var clip = _groundSittingAnimations[Random.Range(0, _groundSittingAnimations.Count)];
+            int selectedIndex = Random.Range(0, _groundSittingAnimations.Count);
+            if (IsSpawned && IsServer)
+            {
+                _isGroundSitting.Value = true;
+                _sitIndex.Value = selectedIndex;
+            }
+
+            var clip = _groundSittingAnimations[selectedIndex];
             _overrideController[_sittingClipName] = clip;
         }
 
@@ -193,6 +350,9 @@ public class NPCAnimationController : MonoBehaviour
     void Update()
     {
         if (_animator == null || _navAgentController == null) return;
+
+        // If networked and listening, only server drives parameter updates; client receives via NetworkAnimator
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer) return;
 
         float target = _navAgentController.CurrentSpeed;
         float current = _animator.GetFloat(SpeedParam);

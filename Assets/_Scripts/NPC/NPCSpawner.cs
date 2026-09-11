@@ -1,7 +1,8 @@
-using UnityEngine;
 using System.Collections.Generic;
+using Unity.Netcode;
+using UnityEngine;
 
-public class NPCSpawner : MonoBehaviour
+public class NPCSpawner : NetworkBehaviour
 {
     [SerializeField] GameObject _npcParent;
     [SerializeField] List<GameObject> _npcPrefabs = new();
@@ -15,7 +16,12 @@ public class NPCSpawner : MonoBehaviour
 
     void Update()
     {
+        // When NetworkManager is present, only spawn if the server/host is running
+        if (NetworkManager.Singleton != null && (!NetworkManager.Singleton.IsListening || !NetworkManager.Singleton.IsServer)) return;
+
         _spawnTimer += Time.deltaTime;
+
+        _npcList.RemoveAll(item => item == null);
 
         if (_spawnTimer >= _spawnInterval && _npcList.Count < _maxNPCCount)
         {
@@ -36,7 +42,30 @@ public class NPCSpawner : MonoBehaviour
         int randomSpawnPointIndex = Random.Range(0, _spawnPoints.Count);
 
         GameObject npcInstance = Instantiate(_npcPrefabs[randomPrefabIndex], _spawnPoints[randomSpawnPointIndex].position, Quaternion.identity);
-        npcInstance.transform.SetParent(_npcParent.transform);
+
+        if (npcInstance.TryGetComponent<NetworkObject>(out var netObj))
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && NetworkManager.Singleton.IsServer)
+            {
+                netObj.Spawn(true);
+            }
+
+            if (_npcParent != null)
+            {
+                if (netObj.IsSpawned && _npcParent.TryGetComponent<NetworkObject>(out var parentNetObj))
+                {
+                    netObj.TrySetParent(parentNetObj);
+                }
+                else
+                {
+                    npcInstance.transform.SetParent(_npcParent.transform);
+                }
+            }
+        }
+        else if (_npcParent != null)
+        {
+            npcInstance.transform.SetParent(_npcParent.transform);
+        }
 
         if (npcInstance.TryGetComponent<NAVAgentController>(out var agentController))
         {
@@ -46,7 +75,14 @@ public class NPCSpawner : MonoBehaviour
         else
         {
             Debug.LogWarning("Spawned NPC does not have a NAVAgentController component.");
-            Destroy(npcInstance);
+            if (netObj != null && netObj.IsSpawned)
+            {
+                netObj.Despawn(true);
+            }
+            else
+            {
+                Destroy(npcInstance);
+            }
         }
     }
 }

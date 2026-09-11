@@ -10,23 +10,28 @@ public class RotationController : NetworkBehaviour, IInitializable
     [SerializeField] Transform _parentTransform;
     [SerializeField] Camera _playerCamera;
 
-    [Header("Yaw")]
-    [SerializeField] float _yawSensitivity = 3f;
-
-    [Header("Pitch")]
-    [SerializeField] float _pitchSensitivity = 3f;
+    [Header("Look Sensitivity")]
+    [SerializeField] float _lookSensitivityX = 2f;
+    [SerializeField] float _lookSensitivityY = 2f;
     [SerializeField] bool _invertVerticalInput;
-    [SerializeField] float _minPitch = -20f;
-    [SerializeField] float _maxPitch = 80f;
-    [SerializeField] float _startingPitch = 20f;
 
-    [Header("Orbit")]
-    [SerializeField, Min(0.1f)] float _distance = 4f;
-    [SerializeField] Vector3 _lookAtOffset = new(0f, 1.6f, 0f);
+    [Header("Pitch Limits")]
+    [SerializeField] float _minPitch = -30f;
+    [SerializeField] float _maxPitch = 70f;
+    [SerializeField] float _startingPitch = 12f;
+
+    [Header("Camera Orbit")]
+    [SerializeField, Min(0.1f)] float _distance = 3.2f;
+    [SerializeField] Vector3 _lookAtOffset = new(0f, 0.25f, 0f);
+    [SerializeField] float _positionFollowSpeed = 30f;
+    [SerializeField] float _rotationFollowSpeed = 25f;
 
     [Header("Rotation State")]
-    [SerializeField] float _yaw;
-    [SerializeField] float _pitch;
+    [SerializeField] float _cameraYawOffset;
+    [SerializeField] float _currentPitch;
+
+    Vector3 _currentCameraPos;
+    Quaternion _currentCameraRot;
 
     [Header("IInitializable")]
     public bool IsInitialized { get; private set; }
@@ -34,18 +39,11 @@ public class RotationController : NetworkBehaviour, IInitializable
     public event Action OnInitializationStart;
     public event Action<bool> OnInitializationFinish;
 
-    // Networked purely so remote copies (head-look IK, turn animations, etc.)
-    // can react to look input - actual yaw/pitch application below is local
-    // per-client. Yaw is replicated to observers via a NetworkTransform on
-    // the _parentTransform's prefab (same pattern as the body Rigidbody in
-    // MovementController); pitch never needs to leave this client since
-    // non-owners never see their own copy of playerCamera (disabled below).
     readonly NetworkVariable<Vector2> _mouseInput = new(
         Vector2.zero,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Owner);
 
-    // Server controls this. Clients can read it.
     readonly NetworkVariable<bool> _rotationLockedNetwork = new(
         false,
         NetworkVariableReadPermission.Everyone,
@@ -56,22 +54,50 @@ public class RotationController : NetworkBehaviour, IInitializable
         get => _rotationLockedNetwork.Value;
         set
         {
-            // Only the server should authoritatively change this.
             if (IsServer)
                 _rotationLockedNetwork.Value = value;
         }
     }
 
+    Camera _sceneMainCam;
+
     public override void OnNetworkSpawn()
     {
-        // Only the local owner should ever render from their own camera -
-        // remote copies would otherwise fight for the audio listener/output.
-        if (!IsOwner)
+        if (IsOwner)
+        {
+            // Deactivate static scene camera so PlayerCamera becomes the primary view
+            var mainCams = Camera.allCameras;
+            foreach (var c in mainCams)
+            {
+                if (c != _playerCamera && c.CompareTag("MainCamera"))
+                {
+                    _sceneMainCam = c;
+                    _sceneMainCam.gameObject.SetActive(false);
+                }
+            }
+
+            if (_playerCamera != null)
+            {
+                _playerCamera.gameObject.SetActive(true);
+                _playerCamera.tag = "MainCamera";
+            }
+        }
+        else if (_playerCamera != null)
         {
             _playerCamera.gameObject.SetActive(false);
         }
 
         _ = InitializeAsync();
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner && _sceneMainCam != null)
+        {
+            _sceneMainCam.gameObject.SetActive(true);
+        }
+
+        base.OnNetworkDespawn();
     }
 
     void Update()
@@ -82,69 +108,71 @@ public class RotationController : NetworkBehaviour, IInitializable
         HandleLocalInput();
     }
 
-    // Camera work happens in LateUpdate so it reads a final, settled
-    // _parentTransform position for this frame (movement/animation have
-    // already run in Update/FixedUpdate), avoiding one-frame camera jitter.
     void LateUpdate()
     {
         if (!IsInitialized || !IsOwner)
             return;
 
-        HandleOwnerRotation();
+        UpdateCameraTransform();
     }
 
     void HandleLocalInput()
     {
-        if (_rotationLockedNetwork.Value)
+        if (_rotationLockedNetwork.Value || _inputManager == null)
         {
             _mouseInput.Value = Vector2.zero;
             return;
         }
 
         _mouseInput.Value = _inputManager.LookInput;
-    }
-
-    void HandleOwnerRotation()
-    {
-        if (_rotationLockedNetwork.Value)
-            return;
 
         Vector2 input = _mouseInput.Value;
 
-        // Horizontal look only ever touches _parentTransform's Y euler - X
-        // and Z are rebuilt as 0 every time, so Y is the only value that
-        // can change on that transform.
-        _yaw = Mathf.Repeat(_yaw + input.x * _yawSensitivity, 360f);
-        _parentTransform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        // Optional mouse look to orbit around the bird
+        if (Mathf.Abs(input.x) > 0.01f)
+        {
+            _cameraYawOffset += input.x * _lookSensitivityX;
+            _cameraYawOffset = Mathf.Clamp(_cameraYawOffset, -80f, 80f);
+        }
+        else
+        {
+            // Smoothly return camera to center behind the bird when not looking around
+            _cameraYawOffset = Mathf.MoveTowards(_cameraYawOffset, 0f, 60f * Time.deltaTime);
+        }
 
-        // Mouse down -> camera arcs up and in; mouse up -> camera arcs down
-        // toward the ground and in. Flip _invertVerticalInput if your
-        // InputManager's LookInput.y convention comes in reversed.
         float verticalDelta = input.y * (_invertVerticalInput ? 1f : -1f);
-        _pitch = Mathf.Clamp(_pitch + verticalDelta * _pitchSensitivity, _minPitch, _maxPitch);
-
-        UpdateCameraPosition();
+        _currentPitch = Mathf.Clamp(_currentPitch + verticalDelta * _lookSensitivityY, _minPitch, _maxPitch);
     }
 
-    void UpdateCameraPosition()
+    void UpdateCameraTransform()
     {
-        // Orbits playerCamera around a fixed-radius vertical arc centered on
-        // the pivot. Height and horizontal offset are the sin/cos components
-        // of that same radius, so pitching toward either limit simultaneously
-        // raises/lowers the camera AND pulls it closer to the pivot - the
-        // "up and in" / "down and in" behavior, with no separate distance
-        // tuning needed.
-        float pitchRad = _pitch * Mathf.Deg2Rad;
+        if (_playerCamera == null || _parentTransform == null)
+            return;
+
+        // The camera should orbit directly behind the bird's facing direction
+        float targetYaw = _parentTransform.eulerAngles.y + _cameraYawOffset;
+        Quaternion orbitRotation = Quaternion.Euler(_currentPitch, targetYaw, 0f);
+
+        float pitchRad = _currentPitch * Mathf.Deg2Rad;
         float horizontalDistance = _distance * Mathf.Cos(pitchRad);
         float verticalOffset = _distance * Mathf.Sin(pitchRad);
 
         Vector3 localOffset = new(0f, verticalOffset, -horizontalDistance);
         Vector3 pivotPoint = _parentTransform.position + _lookAtOffset;
-        Vector3 desiredPosition = pivotPoint + (_parentTransform.rotation * localOffset);
 
-        _playerCamera.transform.SetPositionAndRotation(
-            desiredPosition,
-            Quaternion.LookRotation((pivotPoint - desiredPosition).normalized, Vector3.up));
+        // Calculate desired world position behind the bird
+        Quaternion yawOnlyRot = Quaternion.Euler(0f, targetYaw, 0f);
+        Vector3 desiredPosition = pivotPoint + (yawOnlyRot * localOffset);
+        Quaternion desiredRotation = Quaternion.LookRotation((pivotPoint - desiredPosition).normalized, Vector3.up);
+
+        // Smooth follow to eliminate any physics step choppiness
+        float t = 1f - Mathf.Exp(-_positionFollowSpeed * Time.deltaTime);
+        _currentCameraPos = Vector3.Lerp(_playerCamera.transform.position, desiredPosition, t);
+
+        float rotT = 1f - Mathf.Exp(-_rotationFollowSpeed * Time.deltaTime);
+        _currentCameraRot = Quaternion.Slerp(_playerCamera.transform.rotation, desiredRotation, rotT);
+
+        _playerCamera.transform.SetPositionAndRotation(_currentCameraPos, _currentCameraRot);
     }
 
     public async Awaitable InitializeAsync()
@@ -152,23 +180,19 @@ public class RotationController : NetworkBehaviour, IInitializable
         OnInitializationStart?.Invoke();
 
         if (_parentTransform == null)
-        {
-            Debug.LogError("[RotationController] No parent transform assigned.", this);
+            _parentTransform = transform.root;
 
-            IsInitialized = false;
-            enabled = false;
+        if (_playerCamera == null)
+            _playerCamera = GetComponentInChildren<Camera>(true);
 
-            OnInitializationFinish?.Invoke(false);
-            return;
-        }
+        if (_playerCamera == null)
+            _playerCamera = transform.root.GetComponentInChildren<Camera>(true);
 
-        if (_playerCamera == null && !TryGetComponent(out _playerCamera))
+        if (_playerCamera == null)
         {
             Debug.LogError("[RotationController] No Camera found.", this);
-
             IsInitialized = false;
             enabled = false;
-
             OnInitializationFinish?.Invoke(false);
             return;
         }
@@ -176,31 +200,27 @@ public class RotationController : NetworkBehaviour, IInitializable
         if (_inputManager == null)
             _inputManager = InputManager.Instance;
 
-        if (_inputManager == null)
-        {
-            Debug.LogError("[RotationController] No InputManager found or assigned to _inputManager.", this);
-
-            IsInitialized = false;
-            enabled = false;
-
-            OnInitializationFinish?.Invoke(false);
-            return;
-        }
-
-        _yaw = _parentTransform.eulerAngles.y;
-        _pitch = Mathf.Clamp(_startingPitch, _minPitch, _maxPitch);
+        _cameraYawOffset = 0f;
+        _currentPitch = Mathf.Clamp(_startingPitch, _minPitch, _maxPitch);
 
         if (IsOwner)
         {
-            _parentTransform.rotation = Quaternion.Euler(0f, _yaw, 0f);
-            UpdateCameraPosition(); // snap to the correct start position immediately, no first-frame pop
+            Vector3 pivotPoint = _parentTransform.position + _lookAtOffset;
+            float pitchRad = _currentPitch * Mathf.Deg2Rad;
+            float horizontalDistance = _distance * Mathf.Cos(pitchRad);
+            float verticalOffset = _distance * Mathf.Sin(pitchRad);
+            Vector3 localOffset = new(0f, verticalOffset, -horizontalDistance);
+            Quaternion yawOnlyRot = Quaternion.Euler(0f, _parentTransform.eulerAngles.y, 0f);
+
+            _currentCameraPos = pivotPoint + (yawOnlyRot * localOffset);
+            _currentCameraRot = Quaternion.LookRotation((pivotPoint - _currentCameraPos).normalized, Vector3.up);
+            _playerCamera.transform.SetPositionAndRotation(_currentCameraPos, _currentCameraRot);
         }
 
         IsInitialized = true;
         enabled = true;
 
         OnInitializationFinish?.Invoke(true);
-
-        Debug.Log($"[RotationController] Initialized. " + $"NetworkObjectId: {NetworkObjectId}, " + $"IsOwner: {IsOwner}");
+        Debug.Log($"[RotationController] Initialized. NetworkObjectId: {NetworkObjectId}, IsOwner: {IsOwner}");
     }
 }

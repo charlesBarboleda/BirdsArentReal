@@ -22,6 +22,10 @@ namespace InputSystem
         // --- Continuous inputs: poll these every frame ---
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
+        public float AscendInput { get; private set; }
+        public float DescendInput { get; private set; }
+        public bool AscendPressed => AscendInput > 0.1f;
+        public bool DescendPressed => DescendInput > 0.1f;
 
         // --- Discrete inputs: subscribe to these ---
         public event Action AttackPerformed;
@@ -34,6 +38,9 @@ namespace InputSystem
         public event Action SprintCanceled;
         public event Action PreviousPerformed;
         public event Action NextPerformed;
+
+        bool _actionJumpHeld;
+        bool _actionCrouchHeld;
 
         void Awake()
         {
@@ -68,6 +75,38 @@ namespace InputSystem
             _inputActions?.Dispose();
         }
 
+        void Update()
+        {
+            float ascend = _actionJumpHeld ? 1f : 0f;
+            float descend = _actionCrouchHeld ? 1f : 0f;
+
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.spaceKey.isPressed)
+                    ascend = 1f;
+                if (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed)
+                    descend = 1f;
+
+                // Fallback direct polling for WASD if Move action is 0 but keys are pressed
+                if (MoveInput.sqrMagnitude < 0.01f)
+                {
+                    float x = 0f;
+                    float y = 0f;
+                    if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) x -= 1f;
+                    if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) x += 1f;
+                    if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) y += 1f;
+                    if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) y -= 1f;
+                    if (x != 0f || y != 0f)
+                    {
+                        MoveInput = new Vector2(x, y).normalized;
+                    }
+                }
+            }
+
+            AscendInput = ascend;
+            DescendInput = descend;
+        }
+
         // ------------------------------------------------------------------
         // InputActions.IPlayerActions implementation
         // (wired up automatically via SetCallbacks — do not call these manually)
@@ -90,7 +129,15 @@ namespace InputSystem
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (context.performed) JumpPerformed?.Invoke();
+            if (context.performed)
+            {
+                _actionJumpHeld = true;
+                JumpPerformed?.Invoke();
+            }
+            else if (context.canceled)
+            {
+                _actionJumpHeld = false;
+            }
         }
 
         public void OnInteract(InputAction.CallbackContext context)
@@ -103,8 +150,16 @@ namespace InputSystem
 
         public void OnCrouch(InputAction.CallbackContext context)
         {
-            if (context.performed) CrouchPerformed?.Invoke();
-            else if (context.canceled) CrouchCanceled?.Invoke();
+            if (context.performed)
+            {
+                _actionCrouchHeld = true;
+                CrouchPerformed?.Invoke();
+            }
+            else if (context.canceled)
+            {
+                _actionCrouchHeld = false;
+                CrouchCanceled?.Invoke();
+            }
         }
 
         public void OnSprint(InputAction.CallbackContext context)

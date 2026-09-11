@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public enum NPCState
@@ -24,8 +25,9 @@ enum NPCActionType
 /// InteractableStationBase and to other NPCs only through
 /// NPCSocialRegistry, so adding a new station type or social behaviour
 /// never requires touching this class's public surface.
+/// In networked multiplayer, the action loop runs exclusively on the server.
 /// </summary>
-public class NPCActionController : MonoBehaviour
+public class NPCActionController : NetworkBehaviour
 {
     [Header("Setup")]
     [SerializeField] NAVAgentController _navAgentController;
@@ -57,12 +59,19 @@ public class NPCActionController : MonoBehaviour
 
     InteractableStationBase _reservedStation;
     bool _isBusy; // true while reserved for a conversation, either as initiator or partner
+    Coroutine _actionLoopCoroutine;
 
     public NPCState CurrentState { get; private set; } = NPCState.Idle;
     public NPCAnimationController AnimationController => _animationController;
 
     /// <summary>True when this NPC can be pulled into a conversation right now.</summary>
     public bool IsAvailableForConversation => !_isBusy && CurrentState == NPCState.Idle;
+
+    void Awake()
+    {
+        if (_navAgentController == null) TryGetComponent(out _navAgentController);
+        if (_animationController == null) TryGetComponent(out _animationController);
+    }
 
     void Start()
     {
@@ -75,23 +84,80 @@ public class NPCActionController : MonoBehaviour
 
         if (_animationController == null) TryGetComponent(out _animationController);
 
-        StartCoroutine(ActionLoop());
+        // Fallback for offline singleplayer when NetworkManager is not present in the scene
+        if (NetworkManager.Singleton == null)
+        {
+            NPCSocialRegistry.Register(this);
+            StartActionLoop();
+        }
     }
 
-    void OnEnable() => NPCSocialRegistry.Register(this);
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (IsServer)
+        {
+            NPCSocialRegistry.Register(this);
+            StartActionLoop();
+        }
+        else
+        {
+            StopActionLoop();
+            NPCSocialRegistry.Unregister(this);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        StopActionLoop();
+        CleanupReservations();
+        NPCSocialRegistry.Unregister(this);
+
+        base.OnNetworkDespawn();
+    }
+
+    void OnEnable()
+    {
+        if (NetworkManager.Singleton == null || (IsSpawned && IsServer))
+        {
+            NPCSocialRegistry.Register(this);
+        }
+    }
 
     void OnDisable()
     {
         NPCSocialRegistry.Unregister(this);
+        CleanupReservations();
+        StopActionLoop();
+    }
 
-        // If the NPC gets despawned/disabled mid-action, don't leave its
-        // reserved slot permanently unavailable to everyone else.
-        if (_reservedStation == null) return;
+    void StartActionLoop()
+    {
+        if (_actionLoopCoroutine != null) return;
+        _actionLoopCoroutine = StartCoroutine(ActionLoop());
+    }
 
-        StopSitting();
-        _navAgentController?.ResumeNavigation();
-        _reservedStation.ReleaseSlot(this);
-        _reservedStation = null;
+    void StopActionLoop()
+    {
+        if (_actionLoopCoroutine != null)
+        {
+            StopCoroutine(_actionLoopCoroutine);
+            _actionLoopCoroutine = null;
+        }
+    }
+
+    void CleanupReservations()
+    {
+        if (_reservedStation != null)
+        {
+            StopSitting();
+            _navAgentController?.ResumeNavigation();
+            _reservedStation.ReleaseSlot(this);
+            _reservedStation = null;
+        }
+
+        _isBusy = false;
     }
 
     IEnumerator ActionLoop()

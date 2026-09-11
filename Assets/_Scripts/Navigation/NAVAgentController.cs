@@ -1,8 +1,9 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class NAVAgentController : MonoBehaviour
+public class NAVAgentController : NetworkBehaviour
 {
     [SerializeField] NavMeshAgent _agent;
 
@@ -11,6 +12,17 @@ public class NAVAgentController : MonoBehaviour
         if (_agent == null && !TryGetComponent(out _agent))
         {
             Debug.LogError($"[{nameof(NAVAgentController)}] NavMeshAgent component is missing from '{name}'. Add one or assign it in the inspector.", this);
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        // Clients should not run NavMeshAgent simulations; position/rotation is synced via NetworkTransform
+        if (!IsServer && _agent != null)
+        {
+            _agent.enabled = false;
         }
     }
 
@@ -27,6 +39,8 @@ public class NAVAgentController : MonoBehaviour
 
     public void GoTo(Vector3 destination)
     {
+        if (!IsServer) return;
+
         if (_agent == null)
         {
             Debug.LogError($"[{nameof(NAVAgentController)}] NavMeshAgent reference is missing on '{name}'.", this);
@@ -56,6 +70,8 @@ public class NAVAgentController : MonoBehaviour
     /// <summary>Stops navigation, disables the agent to prevent NavMesh clamping, and snaps precisely to target transform.</summary>
     public void StopAndSnap(Vector3 position, Quaternion rotation)
     {
+        if (!IsServer) return;
+
         if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
         {
             _agent.isStopped = true;
@@ -75,7 +91,7 @@ public class NAVAgentController : MonoBehaviour
     /// <summary>Re-enables the agent and places it safely on the nearest walkable NavMesh point.</summary>
     public void ResumeNavigation()
     {
-        if (_agent == null) return;
+        if (!IsServer || _agent == null) return;
 
         if (!_agent.enabled)
         {

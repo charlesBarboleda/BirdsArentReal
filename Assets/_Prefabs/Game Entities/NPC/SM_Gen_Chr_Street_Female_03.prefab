@@ -2034,6 +2034,9 @@ GameObject:
   - component: {fileID: 1421844186477782343}
   - component: {fileID: 2392191452450934592}
   - component: {fileID: 6223330564371267069}
+  - component: {fileID: 5610540209246026350}
+  - component: {fileID: 8135262496532565128}
+  - component: {fileID: 8408532732909595594}
   m_Layer: 0
   m_Name: SM_Gen_Chr_Street_Female_03
   m_TagString: Untagged
@@ -2136,6 +2139,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de3518be13e929b48ba33433ed04ea21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NAVAgentController
+  ShowTopMostFoldoutHeaderGroup: 1
   _agent: {fileID: 8046343122248086422}
 --- !u!114 &2392191452450934592
 MonoBehaviour:
@@ -2149,8 +2153,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c8182c87ca2d4c479506721914846fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCAnimationController
+  ShowTopMostFoldoutHeaderGroup: 1
   _animator: {fileID: 6342454644329998674}
   _navAgentController: {fileID: 1421844186477782343}
+  _networkAnimator: {fileID: 8408532732909595594}
   _baseController: {fileID: 9100000, guid: bcbc91e66a9fda9428ed69f217a5b7e6, type: 2}
   _walkAnimations:
   - {fileID: 7400000, guid: c4f79022d20c65147b4f7af33565e8e9, type: 2}
@@ -2184,6 +2190,7 @@ MonoBehaviour:
   _talkClipName: Talk
   _sittingClipName: Sit
   _speedLerpSpeed: 8
+  _isStaticNPC: 0
 --- !u!114 &6223330564371267069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2196,6 +2203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85142658337fb5f4a8fd9de83b239223, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCActionController
+  ShowTopMostFoldoutHeaderGroup: 1
   _navAgentController: {fileID: 1421844186477782343}
   _animationController: {fileID: 2392191452450934592}
   _wanderWeight: 0.2
@@ -2209,6 +2217,118 @@ MonoBehaviour:
   _conversationSearchRadius: 15
   _conversationDistance: 1.2
   _minConversationDuration: 2
+--- !u!114 &5610540209246026350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3779599460037819802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3420452866
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &8135262496532565128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3779599460037819802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 2
+  RotationInterpolationType: 2
+  ScaleInterpolationType: 2
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!114 &8408532732909595594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3779599460037819802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
+  m_Animator: {fileID: 6342454644329998674}
+  TransitionStateInfoList:
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: 2081823275
+    DestinationState: 1058437765
+    TransitionDuration: 0.2
+    TriggerNameHash: 1058437765
+    TransitionIndex: 2
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: Speed
+      NameHash: -823668238
+      Synchronize: 1
+      ParameterType: 1
+    - name: Talk
+      NameHash: 1058437765
+      Synchronize: 1
+      ParameterType: 9
+    - name: IsSitting
+      NameHash: 209758592
+      Synchronize: 1
+      ParameterType: 4
+  AnimatorParametersExpanded: 0
 --- !u!1 &3842215722032356258
 GameObject:
   m_ObjectHideFlags: 0
