@@ -33,8 +33,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5.72, y: 1.09, z: 9.18}
-  m_LocalScale: {x: 0.17, y: 0.17, z: 0.17}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 0.17, y: 0.48676103, z: 0.17}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -163,7 +163,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   _splatterEffectPrefab: {fileID: 0}
-  _despawnDelayAfterImpact: 2
+  _splatterProfile: {fileID: 11400000, guid: bb5be3791dcf1774a97ccb8a93b24b40, type: 2}
+  _despawnDelayAfterImpact: 0
 --- !u!114 &8115975131873683240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,7 +217,7 @@ MonoBehaviour:
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
   AuthorityMode: 0
-  TickSyncChildren: 0
+  TickSyncChildren: 1
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1

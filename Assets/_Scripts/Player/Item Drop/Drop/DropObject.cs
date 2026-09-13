@@ -1,4 +1,5 @@
 using System;
+using SplatterFX;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -38,6 +39,7 @@ public class DropObject : NetworkBehaviour
 
     [Header("Effect (Optional)")]
     [SerializeField] GameObject _splatterEffectPrefab;
+    [SerializeField] SplatterProfile _splatterProfile;
 
     [Header("Lifecycle")]
     [SerializeField] float _despawnDelayAfterImpact = 2f;
@@ -141,8 +143,8 @@ public class DropObject : NetworkBehaviour
         State = DropState.Held;
 
         _rigidbody.isKinematic = true;
-        _rigidbody.linearVelocity = Vector3.zero;
-        _rigidbody.angularVelocity = Vector3.zero;
+        // _rigidbody.linearVelocity = Vector3.zero;
+        // _rigidbody.angularVelocity = Vector3.zero;
     }
 
     /// <summary>
@@ -175,10 +177,11 @@ public class DropObject : NetworkBehaviour
         if (collision.contactCount == 0)
             return;
 
-        TriggerSplatter(collision.GetContact(0).point);
+        ContactPoint contact = collision.GetContact(0);
+        TriggerSplatter(contact.point, contact.normal);
     }
 
-    void TriggerSplatter(Vector3 impactPoint)
+    void TriggerSplatter(Vector3 impactPoint, Vector3 impactNormal)
     {
         if (!IsServer)
             return;
@@ -204,7 +207,7 @@ public class DropObject : NetworkBehaviour
                 reactable.ReactToSplatter(impactPoint);
         }
 
-        PlaySplatterEffectRpc(impactPoint);
+        PlaySplatterEffectRpc(impactPoint, impactNormal);
 
         if (_despawnDelayAfterImpact >= 0f)
             Invoke(nameof(DespawnSelf), _despawnDelayAfterImpact);
@@ -220,9 +223,9 @@ public class DropObject : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    void PlaySplatterEffectRpc(Vector3 impactPoint)
+    void PlaySplatterEffectRpc(Vector3 impactPoint, Vector3 impactNormal)
     {
-        // Cosmetic-only. Every client creates its own local VFX.
+        // Cosmetic-only. Every client runs this locally.
         if (_splatterEffectPrefab != null)
         {
             Instantiate(
@@ -230,6 +233,8 @@ public class DropObject : NetworkBehaviour
                 impactPoint,
                 Quaternion.identity);
         }
+
+        SplatterDecalUtility.SpawnSplatters(impactPoint, impactNormal, _splatterProfile);
     }
 
     void OnDrawGizmosSelected()

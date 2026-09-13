@@ -22,6 +22,12 @@ public class DropController : NetworkBehaviour, IInitializable
     [SerializeField] Transform _pickupPoint;
     [SerializeField] Transform _holdSocket;
 
+    [Header("Drop Camera")]
+    [SerializeField] DropCameraController _dropCameraController;
+    [SerializeField] float _cameraDeactivateDelayAfterImpact = 1.5f;
+    DropObject _cameraTrackedObject;
+    ulong _cameraTrackedClientId;
+
     [Header("Pickup")]
     [SerializeField] float _pickupRadius = 2f;
     [SerializeField] LayerMask _droppableLayers;
@@ -51,6 +57,11 @@ public class DropController : NetworkBehaviour, IInitializable
     public override void OnNetworkSpawn()
     {
         _ = InitializeAsync();
+
+        if (IsOwner)
+        {
+            _dropCameraController.InitializeForLocalOwner();
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -59,6 +70,11 @@ public class DropController : NetworkBehaviour, IInitializable
         {
             _inputManager.PickupPerformed -= HandlePickupPerformed;
             _inputManager.DropPerformed -= HandleDropPerformed;
+        }
+
+        if (IsOwner)
+        {
+            _dropCameraController.CleanupLocalOwnerCamera();
         }
 
         base.OnNetworkDespawn();
@@ -91,15 +107,54 @@ public class DropController : NetworkBehaviour, IInitializable
     }
 
     [Rpc(SendTo.Server)]
-    void RequestDropRpc()
+    void RequestDropRpc(RpcParams rpcParams = default)
     {
         if (!IsServer)
             return;
 
+        ulong senderClientId =
+            rpcParams.Receive.SenderClientId;
+
+        NetworkObjectReference droppedObjectReference;
+
         if (IsHolding)
-            DropHeldObject();
+        {
+            droppedObjectReference = DropHeldObject();
+        }
         else
-            TryDropPoop();
+        {
+            droppedObjectReference = TryDropPoop();
+        }
+
+        // The drop may have failed, for example:
+        // - No held object
+        // - Poop cooldown
+        // - Missing prefab
+        // - Spawn failure
+        if (!droppedObjectReference.TryGet(
+                out NetworkObject droppedNetworkObject))
+        {
+            return;
+        }
+
+        DropObject droppedObject =
+            droppedNetworkObject.GetComponent<DropObject>();
+
+        if (droppedObject == null)
+            return;
+
+        // Track this object's impact on the server.
+        RegisterCameraTracking(
+            droppedObject,
+            senderClientId);
+
+        // Tell ONLY the player who requested the drop
+        // to activate their local camera.
+        ActivateDropCameraRpc(
+            droppedObjectReference,
+            RpcTarget.Single(
+                senderClientId,
+                RpcTargetUse.Temp));
     }
 
     // ---------------------------------------------------------------------
@@ -194,16 +249,105 @@ public class DropController : NetworkBehaviour, IInitializable
     // ---------------------------------------------------------------------
     // DROP
     // ---------------------------------------------------------------------
+    [Rpc(SendTo.SpecifiedInParams)]
+    void StopDropCameraRpc(
+        float delay,
+        RpcParams rpcParams = default)
+    {
+        if (_dropCameraController == null)
+            return;
 
-    void DropHeldObject()
+        _dropCameraController.StopAfterImpact(delay);
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    void ActivateDropCameraRpc(
+    NetworkObjectReference droppedObjectReference,
+    RpcParams rpcParams = default)
+    {
+        if (!droppedObjectReference.TryGet(
+                out NetworkObject droppedNetworkObject))
+        {
+            Debug.LogWarning(
+                "[DropController] Could not resolve dropped object " +
+                "on camera client.");
+
+            return;
+        }
+
+        DropObject droppedObject =
+            droppedNetworkObject.GetComponent<DropObject>();
+
+        if (droppedObject == null)
+            return;
+
+        if (_dropCameraController == null)
+        {
+            Debug.LogWarning(
+                "[DropController] No DropCameraController assigned.",
+                this);
+
+            return;
+        }
+
+        _dropCameraController.Follow(droppedObject.transform);
+    }
+
+    void HandleTrackedObjectImpact(Vector3 impactPoint)
     {
         if (!IsServer)
             return;
 
-        if (_heldObject == null)
+        if (_cameraTrackedObject == null)
             return;
 
+        StopDropCameraRpc(
+            _cameraDeactivateDelayAfterImpact,
+            RpcTarget.Single(
+                _cameraTrackedClientId,
+                RpcTargetUse.Temp));
+
+        UnregisterCameraTracking();
+    }
+    void RegisterCameraTracking(DropObject droppedObject, ulong clientId)
+    {
+        if (!IsServer)
+            return;
+
+        if (droppedObject == null)
+            return;
+
+        // Clean up any previous subscription.
+        UnregisterCameraTracking();
+
+        _cameraTrackedObject = droppedObject;
+        _cameraTrackedClientId = clientId;
+
+        droppedObject.OnImpact += HandleTrackedObjectImpact;
+    }
+
+    void UnregisterCameraTracking()
+    {
+        if (_cameraTrackedObject != null)
+        {
+            _cameraTrackedObject.OnImpact -= HandleTrackedObjectImpact;
+        }
+
+        _cameraTrackedObject = null;
+    }
+
+    NetworkObjectReference DropHeldObject()
+    {
+        if (!IsServer)
+            return default;
+
+        if (_heldObject == null)
+            return default;
+
         DropObject held = _heldObject;
+
+        NetworkObjectReference droppedObjectReference =
+            held.NetworkObject;
 
         // Clear the local reference first.
         _heldObject = null;
@@ -218,16 +362,18 @@ public class DropController : NetworkBehaviour, IInitializable
 
         // Re-enable physics.
         held.Drop();
+
+        return droppedObjectReference;
     }
 
     // ---------------------------------------------------------------------
     // POOP FALLBACK
     // ---------------------------------------------------------------------
 
-    void TryDropPoop()
+    NetworkObjectReference TryDropPoop()
     {
         if (!IsServer)
-            return;
+            return default;
 
         if (Time.time < _nextPoopTime)
         {
@@ -236,7 +382,7 @@ public class DropController : NetworkBehaviour, IInitializable
                 $"{_nextPoopTime - Time.time:F1}s more.",
                 this);
 
-            return;
+            return default;
         }
 
         if (_poopPrefab == null)
@@ -245,7 +391,7 @@ public class DropController : NetworkBehaviour, IInitializable
                 "[DropController] No poop prefab assigned.",
                 this);
 
-            return;
+            return default;
         }
 
         Transform spawnPoint =
@@ -259,7 +405,7 @@ public class DropController : NetworkBehaviour, IInitializable
                 "[DropController] No poop spawn point assigned.",
                 this);
 
-            return;
+            return default;
         }
 
         GameObject poopInstance = Instantiate(
@@ -275,7 +421,7 @@ public class DropController : NetworkBehaviour, IInitializable
                 this);
 
             Destroy(poopInstance);
-            return;
+            return default;
         }
 
         poopNetworkObject.Spawn();
@@ -287,6 +433,8 @@ public class DropController : NetworkBehaviour, IInitializable
         }
 
         _nextPoopTime = Time.time + _poopCooldown;
+
+        return poopNetworkObject;
     }
 
     // ---------------------------------------------------------------------
