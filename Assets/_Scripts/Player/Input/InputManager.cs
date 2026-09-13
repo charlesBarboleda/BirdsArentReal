@@ -38,6 +38,8 @@ namespace InputSystem
         public event Action SprintCanceled;
         public event Action PreviousPerformed;
         public event Action NextPerformed;
+        public event Action DropPerformed;
+        public event Action PickupPerformed;
 
         bool _actionJumpHeld;
         bool _actionCrouchHeld;
@@ -125,6 +127,24 @@ namespace InputSystem
         public void OnAttack(InputAction.CallbackContext context)
         {
             if (context.performed) AttackPerformed?.Invoke();
+        }
+
+        public void OnDrop(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                Debug.Log($"OnDrop fired");
+                DropPerformed?.Invoke();
+            }
+        }
+
+        public void OnPickup(InputAction.CallbackContext context)
+        {
+            if (context.performed)
+            {
+                Debug.Log($"OnPickup fired");
+                PickupPerformed?.Invoke();
+            }
         }
 
         public void OnJump(InputAction.CallbackContext context)

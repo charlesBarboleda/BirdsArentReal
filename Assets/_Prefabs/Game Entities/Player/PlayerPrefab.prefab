@@ -265,6 +265,61 @@ Transform:
   - {fileID: 8592582256052029314}
   m_Father: {fileID: 246825477130751289}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1366301468144744853
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7826175422011998743}
+  - component: {fileID: 7350233782481709970}
+  m_Layer: 3
+  m_Name: DropController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7826175422011998743
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366301468144744853}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7350233782481709970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366301468144744853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b044c68189997545870d27b24c6e70b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DropControler
+  ShowTopMostFoldoutHeaderGroup: 1
+  _inputManager: {fileID: 0}
+  _pickupPoint: {fileID: 3509072481235273064}
+  _holdSocket: {fileID: 8849356413633942972}
+  _pickupRadius: 2
+  _droppableLayers:
+    serializedVersion: 2
+    m_Bits: 128
+  _poopPrefab: {fileID: 7715628593199800064, guid: 94185b8864f53174a8e4880dddc480bd, type: 3}
+  _poopDropPoint: {fileID: 5797486343455334138}
+  _poopCooldown: 10
 --- !u!1 &1532026034025836962
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,10 +484,13 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 8849356413633942972}
   - {fileID: 634458475031072594}
   - {fileID: 2018586705997232858}
   - {fileID: 7623926412259290340}
   - {fileID: 5227811368894536585}
+  - {fileID: 7826175422011998743}
+  - {fileID: 5797486343455334138}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2818072530342899568
@@ -891,6 +949,37 @@ Transform:
   m_Children:
   - {fileID: 5828386520440961345}
   m_Father: {fileID: 2775676845210081561}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3612121954105801672
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8849356413633942972}
+  m_Layer: 0
+  m_Name: ObjectHoldingPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8849356413633942972
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3612121954105801672}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0.00000047683716, z: 0.00000047683716, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -0.31909323, z: 0.12040002}
+  m_LocalScale: {x: 7, y: 7, z: 7}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3864868004191190580
 GameObject:
@@ -1943,7 +2032,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.5, y: 0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2351210718587558094}
@@ -2085,6 +2174,37 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.0033269376, y: 0.0077829566, z: 0.000000052154064}
     m_Extent: {x: 0.05637084, y: 0.03843742, z: 0.08809233}
   m_DirtyAABB: 0
+--- !u!1 &8475402434788163402
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5797486343455334138}
+  m_Layer: 3
+  m_Name: PoopDropPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5797486343455334138
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8475402434788163402}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.166, z: -0.156}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8576290893069385972
 GameObject:
   m_ObjectHideFlags: 0
