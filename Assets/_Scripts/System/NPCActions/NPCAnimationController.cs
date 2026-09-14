@@ -44,11 +44,16 @@ public class NPCAnimationController : NetworkBehaviour
     [Tooltip("Picked at random every time StartGroundSitting() is called.")]
     [SerializeField] List<AnimationClip> _groundSittingAnimations = new();
 
+    [Header("Splatter Reaction Variants")]
+    [Tooltip("Picked at random every time PlayRandomSplatter() is called.")]
+    [SerializeField] List<AnimationClip> _splatterAnimations = new();
+
     [Tooltip("Must match the exact name of each placeholder clip in the base controller - that name is the key AnimatorOverrideController uses to swap it.")]
     [SerializeField] string _walkClipName = "Walk";
     [SerializeField] string _idleClipName = "Idle";
     [SerializeField] string _talkClipName = "Talk";
     [SerializeField] string _sittingClipName = "Sit";
+    [SerializeField] string _splatterClipName = "Splatter";
 
     [Header("Blending")]
     [Tooltip("Higher = snappier transition between idle and walk.")]
@@ -60,9 +65,11 @@ public class NPCAnimationController : NetworkBehaviour
     static readonly int SpeedParam = Animator.StringToHash("Speed");
     static readonly int TalkTrigger = Animator.StringToHash("Talk");
     static readonly int IsSittingParam = Animator.StringToHash("IsSitting");
+    static readonly int SplatterTrigger = Animator.StringToHash("Splatter");
 
     AnimatorOverrideController _overrideController;
     Coroutine _continuousTalkCoroutine;
+    bool _locomotionSuppressed;
 
     // Network-synchronized animation selection indices so all clients display identical animations
     readonly NetworkVariable<int> _idleIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -70,6 +77,7 @@ public class NPCAnimationController : NetworkBehaviour
     readonly NetworkVariable<int> _talkIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     readonly NetworkVariable<int> _sitIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     readonly NetworkVariable<bool> _isGroundSitting = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    readonly NetworkVariable<int> _splatterIndex = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     void Awake()
     {
@@ -103,6 +111,7 @@ public class NPCAnimationController : NetworkBehaviour
         _talkIndex.OnValueChanged += OnTalkIndexChanged;
         _sitIndex.OnValueChanged += OnSitIndexChanged;
         _isGroundSitting.OnValueChanged += OnGroundSittingChanged;
+        _splatterIndex.OnValueChanged += OnSplatterIndexChanged;
 
         if (IsServer)
         {
@@ -137,6 +146,11 @@ public class NPCAnimationController : NetworkBehaviour
         {
             ApplySitClip(_sitIndex.Value, _isGroundSitting.Value);
         }
+
+        if (_splatterIndex.Value >= 0 && _splatterIndex.Value < _splatterAnimations.Count)
+        {
+            ApplySplatterClip(_splatterIndex.Value);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -146,6 +160,7 @@ public class NPCAnimationController : NetworkBehaviour
         _talkIndex.OnValueChanged -= OnTalkIndexChanged;
         _sitIndex.OnValueChanged -= OnSitIndexChanged;
         _isGroundSitting.OnValueChanged -= OnGroundSittingChanged;
+        _splatterIndex.OnValueChanged -= OnSplatterIndexChanged;
 
         StopContinuousTalk();
 
@@ -157,6 +172,7 @@ public class NPCAnimationController : NetworkBehaviour
     void OnTalkIndexChanged(int previousValue, int newValue) => ApplyTalkClip(newValue);
     void OnSitIndexChanged(int previousValue, int newValue) => ApplySitClip(newValue, _isGroundSitting.Value);
     void OnGroundSittingChanged(bool previousValue, bool newValue) => ApplySitClip(_sitIndex.Value, newValue);
+    void OnSplatterIndexChanged(int previousValue, int newValue) => ApplySplatterClip(newValue);
 
     void ApplyIdleClip(int index)
     {
@@ -206,6 +222,15 @@ public class NPCAnimationController : NetworkBehaviour
         }
     }
 
+    void ApplySplatterClip(int index)
+    {
+        if (_overrideController == null) SetupAnimationOverrides();
+        if (_overrideController != null && index >= 0 && index < _splatterAnimations.Count)
+        {
+            _overrideController[_splatterClipName] = _splatterAnimations[index];
+        }
+    }
+
     void SetupAnimationOverrides()
     {
         if (_overrideController != null) return;
@@ -224,7 +249,63 @@ public class NPCAnimationController : NetworkBehaviour
             _overrideController[_walkClipName] = _walkAnimations[0];
         }
 
+        if (_splatterAnimations.Count > 0)
+        {
+            _overrideController[_splatterClipName] = _splatterAnimations[0];
+        }
+
         _animator.runtimeAnimatorController = _overrideController;
+    }
+
+    /// <summary>
+    /// Swaps in a random splatter reaction clip and fires the one-shot Splatter trigger.
+    /// Returns the chosen clip's length in seconds (0 if there are no splatter clips assigned),
+    /// so callers know how long the reaction lasts.
+    /// </summary>
+    /// <summary>
+    /// Swaps in a random splatter reaction clip and fires the one-shot Splatter trigger.
+    /// The caller is responsible for stopping the NPC's current actions first.
+    /// Returns the selected clip's length in seconds.
+    /// </summary>
+    public float PlayRandomSplatter()
+    {
+        if (_overrideController == null)
+        {
+            SetupAnimationOverrides();
+        }
+
+        if (_animator == null ||
+            _overrideController == null ||
+            _splatterAnimations.Count == 0)
+        {
+            return 0f;
+        }
+
+        int selectedIndex = Random.Range(0, _splatterAnimations.Count);
+
+        // Server selects the animation so every client uses the same clip.
+        if (IsSpawned && IsServer)
+        {
+            _splatterIndex.Value = selectedIndex;
+        }
+
+        AnimationClip selectedClip = _splatterAnimations[selectedIndex];
+
+        _overrideController[_splatterClipName] = selectedClip;
+
+        // Ensure the trigger is not left in an unexpected state.
+        _animator.ResetTrigger(SplatterTrigger);
+
+        if (_networkAnimator != null && IsSpawned)
+        {
+            _networkAnimator.SetTrigger(SplatterTrigger);
+        }
+        else
+        {
+            _animator.SetTrigger(SplatterTrigger);
+        }
+
+        return selectedClip.length;
     }
 
     /// <summary>
@@ -290,6 +371,29 @@ public class NPCAnimationController : NetworkBehaviour
         }
     }
 
+    public void StopAllActions()
+    {
+        if (_animator == null)
+            return;
+
+        // Stop the currently playing animation state.
+        _animator.Play("Idle", 0, 0f);
+
+        // Reset only trigger parameters that actually exist.
+        foreach (AnimatorControllerParameter parameter in _animator.parameters)
+        {
+            if (parameter.type == AnimatorControllerParameterType.Trigger)
+            {
+                _animator.ResetTrigger(parameter.nameHash);
+            }
+        }
+    }
+
+    public void ResumeLocomotion()
+    {
+        _locomotionSuppressed = false;
+    }
+
     /// <summary>
     /// Swaps in a random sitting clip and transitions into the sitting state.
     /// </summary>
@@ -351,12 +455,27 @@ public class NPCAnimationController : NetworkBehaviour
     {
         if (_animator == null || _navAgentController == null) return;
 
-        // If networked and listening, only server drives parameter updates; client receives via NetworkAnimator
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer) return;
+        // During reactions, prevent locomotion from overriding the reaction animation.
+        if (_locomotionSuppressed)
+        {
+            _animator.SetFloat(SpeedParam, 0f);
+            return;
+        }
+
+        // If networked and listening, only server drives parameter updates.
+        if (NetworkManager.Singleton != null &&
+            NetworkManager.Singleton.IsListening &&
+            !IsServer)
+        {
+            return;
+        }
 
         float target = _navAgentController.CurrentSpeed;
         float current = _animator.GetFloat(SpeedParam);
 
-        _animator.SetFloat(SpeedParam, Mathf.Lerp(current, target, Time.deltaTime * _speedLerpSpeed));
+        _animator.SetFloat(
+            SpeedParam,
+            Mathf.Lerp(current, target, Time.deltaTime * _speedLerpSpeed)
+        );
     }
 }

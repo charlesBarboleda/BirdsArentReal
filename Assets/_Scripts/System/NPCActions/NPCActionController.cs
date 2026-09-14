@@ -27,7 +27,7 @@ enum NPCActionType
 /// never requires touching this class's public surface.
 /// In networked multiplayer, the action loop runs exclusively on the server.
 /// </summary>
-public class NPCActionController : NetworkBehaviour
+public class NPCActionController : NetworkBehaviour, ISplatterReactable
 {
     [Header("Setup")]
     [SerializeField] NAVAgentController _navAgentController;
@@ -57,9 +57,15 @@ public class NPCActionController : NetworkBehaviour
     [Tooltip("Floor for how long a conversation lasts even if a talk clip is very short or missing.")]
     [SerializeField] float _minConversationDuration = 2f;
 
+    [Header("Splatter Reaction Settings")]
+    [Tooltip("Distance the NPC moves backward away from the splatter during the reaction animation.")]
+    [SerializeField] float _splatterStepBackDistance = 1.0f;
+
     InteractableStationBase _reservedStation;
+    NPCActionController _currentPartner;
     bool _isBusy; // true while reserved for a conversation, either as initiator or partner
     Coroutine _actionLoopCoroutine;
+    Coroutine _reactionCoroutine;
 
     public NPCState CurrentState { get; private set; } = NPCState.Idle;
     public NPCAnimationController AnimationController => _animationController;
@@ -157,6 +163,12 @@ public class NPCActionController : NetworkBehaviour
             _reservedStation = null;
         }
 
+        if (_currentPartner != null)
+        {
+            _currentPartner.ReleaseConversationReservation();
+            _currentPartner = null;
+        }
+
         _isBusy = false;
     }
 
@@ -248,6 +260,7 @@ public class NPCActionController : NetworkBehaviour
             yield break;
         }
 
+        _currentPartner = partner;
         _isBusy = true;
         CurrentState = NPCState.Moving;
 
@@ -271,7 +284,11 @@ public class NPCActionController : NetworkBehaviour
 
         yield return new WaitForSeconds(duration);
 
-        partner.ReleaseConversationReservation();
+        if (_currentPartner != null)
+        {
+            _currentPartner.ReleaseConversationReservation();
+            _currentPartner = null;
+        }
         _isBusy = false;
 
         CurrentState = NPCState.Idle;
@@ -302,6 +319,118 @@ public class NPCActionController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Called when a splatter lands within range of this NPC.
+    /// Turns toward the impact center, plays a random splatter reaction animation,
+    /// and moves backwards away from the splatter during the animation.
+    /// </summary>
+    public void ReactToSplatter(Vector3 sourcePosition)
+    {
+        Debug.Log($"[SPLATTER] {name} received reaction request at {sourcePosition}", this);
+
+        // In a networked game, only the server controls NPC reactions.
+        if (NetworkManager.Singleton != null &&
+            NetworkManager.Singleton.IsListening &&
+            !IsServer)
+        {
+            Debug.Log($"[SPLATTER] {name} rejected request because this is a client.", this);
+            return;
+        }
+
+        if (_reactionCoroutine != null)
+        {
+            StopCoroutine(_reactionCoroutine);
+            _reactionCoroutine = null;
+        }
+
+        StopActionLoop();
+        CleanupReservations();
+
+        _animationController.StopAllActions();
+
+        _reactionCoroutine = StartCoroutine(
+            PerformSplatterReaction(sourcePosition)
+        );
+    }
+
+    IEnumerator PerformSplatterReaction(Vector3 sourcePosition)
+    {
+        CurrentState = NPCState.PerformingAction;
+
+        // Stop navigation before applying reaction movement.
+        _navAgentController?.StopPath();
+
+        // Face the source of the splatter.
+        FaceToward(sourcePosition);
+
+        // Play a randomized splatter animation.
+        float clipLength = PlaySplatterAnimation();
+
+        // Fallback duration if no valid animation was assigned.
+        if (clipLength <= 0f)
+        {
+            clipLength = 1.5f;
+        }
+
+        // Calculate the horizontal direction away from the splatter.
+        Vector3 awayDirection = transform.position - sourcePosition;
+        awayDirection.y = 0f;
+
+        if (awayDirection.sqrMagnitude > 0.0001f)
+        {
+            awayDirection.Normalize();
+        }
+        else
+        {
+            // If the NPC is directly on the impact position,
+            // move backward relative to its current facing.
+            awayDirection = -transform.forward;
+            awayDirection.y = 0f;
+            awayDirection.Normalize();
+        }
+
+        float elapsed = 0f;
+        float previousDistance = 0f;
+
+        while (elapsed < clipLength)
+        {
+            elapsed += Time.deltaTime;
+
+            float normalizedTime = Mathf.Clamp01(elapsed / clipLength);
+
+            // Ease-out movement: moves quickly at first, then slows down.
+            float targetDistance =
+                _splatterStepBackDistance *
+                (normalizedTime * (2f - normalizedTime));
+
+            float distanceThisFrame = targetDistance - previousDistance;
+
+            if (distanceThisFrame > 0f)
+            {
+                _navAgentController?.MoveDisplacement(
+                    awayDirection * distanceThisFrame
+                );
+
+                previousDistance = targetDistance;
+            }
+
+            yield return null;
+        }
+
+        // Reaction is finished. Allow locomotion animation updates again.
+        _animationController.ResumeLocomotion();
+
+        // Resume normal navigation.
+        _navAgentController.ResumeNavigation();
+
+        CurrentState = NPCState.Idle;
+
+        _reactionCoroutine = null;
+
+        // Restart the normal NPC behaviour loop.
+        StartActionLoop();
+    }
+
     /// <summary>Attempts to reserve this NPC as a conversation partner. Fails if it's already busy or not idle.</summary>
     public bool TryReserveForConversation()
     {
@@ -319,6 +448,9 @@ public class NPCActionController : NetworkBehaviour
 
     /// <summary>Plays one random non-looping talk animation, if this NPC has an NPCAnimationController. Returns the clip length, or 0 if none played.</summary>
     public float PlayTalkAnimation() => _animationController != null ? _animationController.PlayRandomTalk() : 0f;
+
+    /// <summary>Plays one random non-looping splatter reaction animation, if this NPC has an NPCAnimationController. Returns the clip length, or 0 if none played.</summary>
+    public float PlaySplatterAnimation() => _animationController != null ? _animationController.PlayRandomSplatter() : 0f;
 
     /// <summary>Puts this NPC into the sitting animation state with a random sitting animation variant.</summary>
     public void StartSitting() => _animationController?.StartSitting();

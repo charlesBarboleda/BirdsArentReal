@@ -27,7 +27,7 @@ namespace SplatterFX
                 if (profile.maxSurfacesPerImpact > 0 && spawned >= profile.maxSurfacesPerImpact) break;
 
                 Collider surface = OverlapBuffer[i];
-                if (!TryResolveSurfaceHit(impactPoint, impactNormal, surface, out Vector3 point, out Vector3 normal))
+                if (!TryResolveSurfaceHit(impactPoint, impactNormal, surface, profile.splatterRadius, out Vector3 point, out Vector3 normal))
                     continue;
 
                 if (surface.TryGetComponent(out ISplatterReceiver receiver) && !receiver.CanReceiveSplatter(point))
@@ -38,25 +38,29 @@ namespace SplatterFX
             }
         }
 
-        private static bool TryResolveSurfaceHit(Vector3 impactPoint, Vector3 impactNormal, Collider surface, out Vector3 point, out Vector3 normal)
+        private static bool TryResolveSurfaceHit(Vector3 impactPoint, Vector3 impactNormal, Collider surface, float castRange, out Vector3 point, out Vector3 normal)
         {
-            Vector3 closest = surface.ClosestPoint(impactPoint);
-
-            // Impact point is on (or inside) this collider - trust the original contact
-            // normal rather than raycasting from a point that's already touching it.
-            if ((closest - impactPoint).sqrMagnitude < 0.0001f)
+            // Fast path: the impact point already lies within this collider's bounds -
+            // almost certainly the collider that was actually hit, so trust the original
+            // contact normal rather than querying/raycasting a collider it's already on.
+            if (surface.bounds.Contains(impactPoint))
             {
                 point = impactPoint;
                 normal = impactNormal;
                 return true;
             }
 
-            // For other nearby surfaces caught by the sphere, raycast toward the closest
-            // point to get an accurate normal for that specific surface.
-            Vector3 direction = (closest - impactPoint).normalized;
-            float distance = Vector3.Distance(impactPoint, closest) + 0.05f;
+            // For other nearby surfaces caught by the sphere, cast down onto them (using
+            // the original impact normal as "up") to find their actual surface point and
+            // normal. ClosestPointOnBounds is used instead of Collider.ClosestPoint because
+            // the latter throws on non-convex MeshColliders - the common case for static
+            // level geometry - and casting from above avoids near-parallel rays that miss
+            // or clip an edge when the nearby surface is roughly coplanar with the impact
+            // surface (e.g. adjacent ground materials like pavement next to grass).
+            Vector3 boundsPoint = surface.ClosestPointOnBounds(impactPoint);
+            Vector3 castOrigin = boundsPoint + impactNormal * castRange;
 
-            if (Physics.Raycast(impactPoint, direction, out RaycastHit hit, distance, ~0, QueryTriggerInteraction.Ignore)
+            if (Physics.Raycast(castOrigin, -impactNormal, out RaycastHit hit, castRange * 2f + 0.1f, ~0, QueryTriggerInteraction.Ignore)
                 && hit.collider == surface)
             {
                 point = hit.point;
@@ -81,7 +85,7 @@ namespace SplatterFX
 
             float size = Random.Range(profile.sizeRange.x, profile.sizeRange.y);
             float lifetime = Random.Range(profile.fadeDelayRange.x, profile.fadeDelayRange.y);
-            decal.Activate(new Vector2(size, size), lifetime, profile.fadeDuration, instance => pool.Release(instance));
+            decal.Activate(new Vector2(size, size), lifetime, profile.fadeDuration, profile.startAngleFade, profile.endAngleFade, instance => pool.Release(instance));
         }
 
         private static ComponentPool<SplatterDecalInstance> GetOrCreatePool(GameObject prefab, int prewarmCount)

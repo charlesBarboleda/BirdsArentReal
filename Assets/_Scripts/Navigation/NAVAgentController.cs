@@ -7,6 +7,8 @@ public class NAVAgentController : NetworkBehaviour
 {
     [SerializeField] NavMeshAgent _agent;
 
+    bool CanExecuteLogic => NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening || IsServer;
+
     void Awake()
     {
         if (_agent == null && !TryGetComponent(out _agent))
@@ -39,7 +41,7 @@ public class NAVAgentController : NetworkBehaviour
 
     public void GoTo(Vector3 destination)
     {
-        if (!IsServer) return;
+        if (!CanExecuteLogic) return;
 
         if (_agent == null)
         {
@@ -70,7 +72,7 @@ public class NAVAgentController : NetworkBehaviour
     /// <summary>Stops navigation, disables the agent to prevent NavMesh clamping, and snaps precisely to target transform.</summary>
     public void StopAndSnap(Vector3 position, Quaternion rotation)
     {
-        if (!IsServer) return;
+        if (!CanExecuteLogic) return;
 
         if (_agent != null && _agent.enabled && _agent.isOnNavMesh)
         {
@@ -88,10 +90,42 @@ public class NAVAgentController : NetworkBehaviour
         transform.rotation = rotation;
     }
 
+    /// <summary>Stops pathfinding without destroying agent state so displacement can be applied.</summary>
+    public void StopPath()
+    {
+        if (!CanExecuteLogic || _agent == null) return;
+
+        if (_agent.enabled && _agent.isOnNavMesh)
+        {
+            _agent.isStopped = true;
+            _agent.ResetPath();
+            _agent.velocity = Vector3.zero;
+        }
+    }
+
+    /// <summary>Moves the agent by a displacement vector, respecting NavMesh bounds if active.</summary>
+    public void MoveDisplacement(Vector3 displacement)
+    {
+        if (!CanExecuteLogic || _agent == null)
+        {
+            transform.position += displacement;
+            return;
+        }
+
+        if (_agent.enabled && _agent.isOnNavMesh)
+        {
+            _agent.Move(displacement);
+        }
+        else
+        {
+            transform.position += displacement;
+        }
+    }
+
     /// <summary>Re-enables the agent and places it safely on the nearest walkable NavMesh point.</summary>
     public void ResumeNavigation()
     {
-        if (!IsServer || _agent == null) return;
+        if (!CanExecuteLogic || _agent == null) return;
 
         if (!_agent.enabled)
         {

@@ -1086,7 +1086,8 @@ GameObject:
   - component: {fileID: 2209563507290076225}
   - component: {fileID: 3949896162621281828}
   - component: {fileID: 3421645801168372482}
-  - component: {fileID: 969620588213020213}
+  - component: {fileID: 7692584990558974998}
+  - component: {fileID: -1484300916545224835}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Street_Male_03
   m_TagString: Untagged
@@ -1206,7 +1207,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _animator: {fileID: 8407830639638449479}
   _navAgentController: {fileID: 7381238225115644483}
-  _networkAnimator: {fileID: 969620588213020213}
+  _networkAnimator: {fileID: 0}
   _baseController: {fileID: 9100000, guid: bcbc91e66a9fda9428ed69f217a5b7e6, type: 2}
   _walkAnimations:
   - {fileID: 7400000, guid: c4f79022d20c65147b4f7af33565e8e9, type: 2}
@@ -1235,10 +1236,17 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 861c0bf82c8c5d347acc2ba014f99f4c, type: 2}
   - {fileID: 7400000, guid: 0b40a83cca93b664a866a3e7465a3a21, type: 2}
   - {fileID: 7400000, guid: 1458e3e4d741f8547b9294e7bde6eebf, type: 2}
+  _splatterAnimations:
+  - {fileID: 7400000, guid: fa94959adc101864d86df9b112644039, type: 2}
+  - {fileID: 7400000, guid: a9ebd1c0cbb171745a8b0ffd8e47f2d8, type: 2}
+  - {fileID: 7400000, guid: f2355cf3edaafbf4d87d78111f55a808, type: 2}
+  - {fileID: 7400000, guid: 0420d9109d0754643a7bcb81e376365d, type: 2}
+  - {fileID: 7400000, guid: 22a48f718cb03eb43b27b19130dc1d86, type: 2}
   _walkClipName: Walk
   _idleClipName: Idle
   _talkClipName: Talk
   _sittingClipName: Sit
+  _splatterClipName: Splatter
   _speedLerpSpeed: 8
   _isStaticNPC: 0
 --- !u!114 &2209563507290076225
@@ -1267,6 +1275,7 @@ MonoBehaviour:
   _conversationSearchRadius: 15
   _conversationDistance: 1.2
   _minConversationDuration: 2
+  _splatterStepBackDistance: 1
 --- !u!114 &3949896162621281828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1340,7 +1349,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &969620588213020213
+--- !u!114 &7692584990558974998
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1379,6 +1388,27 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 4
   AnimatorParametersExpanded: 0
+--- !u!65 &-1484300916545224835
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315923550000629945}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 1.72, z: 0.3}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &1455227677683869458
 GameObject:
   m_ObjectHideFlags: 0

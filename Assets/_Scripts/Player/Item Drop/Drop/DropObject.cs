@@ -35,10 +35,10 @@ public class DropObject : NetworkBehaviour
 
     [Header("Splatter")]
     [SerializeField] float _splatterRadius = 2f;
+    [SerializeField] float _splatterNPCReactionRadius = 4f;
     [SerializeField] LayerMask _reactableLayers;
 
     [Header("Effect (Optional)")]
-    [SerializeField] GameObject _splatterEffectPrefab;
     [SerializeField] SplatterProfile _splatterProfile;
 
     [Header("Lifecycle")]
@@ -193,10 +193,11 @@ public class DropObject : NetworkBehaviour
         State = DropState.Impacted;
 
         OnImpact?.Invoke(impactPoint);
-
-        Collider[] hits = Physics.OverlapSphere(
+        Collider[] hits = new Collider[32];
+        int count = Physics.OverlapSphereNonAlloc(
             impactPoint,
-            _splatterRadius,
+            _splatterNPCReactionRadius,
+            hits,
             _reactableLayers);
 
         foreach (Collider hit in hits)
@@ -225,15 +226,6 @@ public class DropObject : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     void PlaySplatterEffectRpc(Vector3 impactPoint, Vector3 impactNormal)
     {
-        // Cosmetic-only. Every client runs this locally.
-        if (_splatterEffectPrefab != null)
-        {
-            Instantiate(
-                _splatterEffectPrefab,
-                impactPoint,
-                Quaternion.identity);
-        }
-
         SplatterDecalUtility.SpawnSplatters(impactPoint, impactNormal, _splatterProfile);
     }
 

@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using Unity.Netcode;
 
-public class DropCameraController : MonoBehaviour
+public class DropCameraController : NetworkBehaviour
 {
     [Header("Camera")]
     [SerializeField] private Camera _dropCamera;
@@ -47,6 +48,11 @@ public class DropCameraController : MonoBehaviour
         {
             _cameraPanel.SetActive(false);
         }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        _cameraPanel = DropCameraUI.Instance.Panel;
     }
 
     /// <summary>

@@ -15,11 +15,13 @@ namespace SplatterFX
 
         private void Awake() => _projector = GetComponent<DecalProjector>();
 
-        public void Activate(Vector2 size, float lifetime, float fadeDuration, Action<SplatterDecalInstance> releaseCallback)
+        public void Activate(Vector2 size, float lifetime, float fadeDuration, float startAngleFade, float endAngleFade, Action<SplatterDecalInstance> releaseCallback)
         {
             Vector3 currentSize = _projector.size;
             _projector.size = new Vector3(size.x, size.y, currentSize.z);
             _projector.fadeFactor = 1f;
+            _projector.startAngleFade = startAngleFade;
+            _projector.endAngleFade = endAngleFade;
 
             _fadeDuration = Mathf.Max(0.01f, fadeDuration);
             _releaseCallback = releaseCallback;

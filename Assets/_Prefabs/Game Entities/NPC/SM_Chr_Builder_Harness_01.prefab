@@ -795,6 +795,7 @@ GameObject:
   - component: {fileID: 2780219055189934611}
   - component: {fileID: 8055571466048275000}
   - component: {fileID: 8978453590804481186}
+  - component: {fileID: 165622726836127649}
   m_Layer: 8
   m_Name: SM_Chr_Builder_Harness_01
   m_TagString: Untagged
@@ -911,6 +912,7 @@ MonoBehaviour:
   _conversationSearchRadius: 15
   _conversationDistance: 1
   _minConversationDuration: 5
+  _splatterStepBackDistance: 1
 --- !u!114 &-8218050944760836530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -955,10 +957,17 @@ MonoBehaviour:
   - {fileID: 7400000, guid: 861c0bf82c8c5d347acc2ba014f99f4c, type: 2}
   - {fileID: 7400000, guid: 0b40a83cca93b664a866a3e7465a3a21, type: 2}
   - {fileID: 7400000, guid: 1458e3e4d741f8547b9294e7bde6eebf, type: 2}
+  _splatterAnimations:
+  - {fileID: 7400000, guid: fa94959adc101864d86df9b112644039, type: 2}
+  - {fileID: 7400000, guid: a9ebd1c0cbb171745a8b0ffd8e47f2d8, type: 2}
+  - {fileID: 7400000, guid: f2355cf3edaafbf4d87d78111f55a808, type: 2}
+  - {fileID: 7400000, guid: 0420d9109d0754643a7bcb81e376365d, type: 2}
+  - {fileID: 7400000, guid: 22a48f718cb03eb43b27b19130dc1d86, type: 2}
   _walkClipName: Walk
   _idleClipName: Idle
   _talkClipName: Talk
   _sittingClipName: Sit
+  _splatterClipName: Splatter
   _speedLerpSpeed: 8
   _isStaticNPC: 0
 --- !u!114 &2780219055189934611
@@ -1073,6 +1082,27 @@ MonoBehaviour:
       Synchronize: 1
       ParameterType: 4
   AnimatorParametersExpanded: 0
+--- !u!65 &165622726836127649
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1259414080112238}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 1.72, z: 0.3}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1 &1259445759147048
 GameObject:
   m_ObjectHideFlags: 0

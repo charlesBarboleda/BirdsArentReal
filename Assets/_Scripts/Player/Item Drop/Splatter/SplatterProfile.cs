@@ -29,6 +29,13 @@ namespace SplatterFX
 
         public float fadeDuration = 2f;
 
+        [Header("Angle Fade")]
+        [Tooltip("Angle (degrees) between the projector's direction and a surface's normal at which the decal starts fading out. Keeps decals from stretching badly on curved/steeply angled surfaces.")]
+        public float startAngleFade = 60f;
+
+        [Tooltip("Angle (degrees) at which the decal has fully faded out due to surface angle.")]
+        public float endAngleFade = 80f;
+
         [Header("Pooling")]
         [Tooltip("Decals pre-instantiated per prefab the first time that prefab is used.")]
         public int poolPrewarmCount = 16;
