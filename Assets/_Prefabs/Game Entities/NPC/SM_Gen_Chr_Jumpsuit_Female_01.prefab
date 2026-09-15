@@ -918,6 +918,37 @@ Transform:
   - {fileID: 419674767888312072}
   m_Father: {fileID: 8001465582914638262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2077454792423837361
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1005701913553346937}
+  m_Layer: 0
+  m_Name: PortraitLookTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1005701913553346937
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077454792423837361}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.633, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4100531615687412793}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2154062687925158115
 GameObject:
   m_ObjectHideFlags: 0
@@ -980,6 +1011,37 @@ Transform:
   m_Children:
   - {fileID: 7498717657225983917}
   m_Father: {fileID: 396449437165260928}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2217908943806451184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6642747021636906664}
+  m_Layer: 0
+  m_Name: PortraitCameraAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6642747021636906664
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2217908943806451184}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.605, z: 0.7}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4100531615687412793}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2228729343142992486
 GameObject:
@@ -2080,6 +2142,8 @@ GameObject:
   - component: {fileID: 6339267198281955175}
   - component: {fileID: 1984291188564054082}
   - component: {fileID: 2325095571698136919}
+  - component: {fileID: 1040215462268551144}
+  - component: {fileID: 6252919535003354112}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Jumpsuit_Female_01
   m_TagString: Untagged
@@ -2126,6 +2190,8 @@ Transform:
   - {fileID: 2702788622169425439}
   - {fileID: 3727163325059550678}
   - {fileID: 8571543473148759102}
+  - {fileID: 6642747021636906664}
+  - {fileID: 1005701913553346937}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &3020602492910292525
@@ -2283,7 +2349,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 3353434772
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 3353434772
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2291,7 +2357,7 @@ MonoBehaviour:
   SynchronizeTransform: 1
   m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -2381,6 +2447,10 @@ MonoBehaviour:
       NameHash: 209758592
       Synchronize: 1
       ParameterType: 4
+    - name: Splatter
+      NameHash: -1734143474
+      Synchronize: 1
+      ParameterType: 9
   AnimatorParametersExpanded: 0
 --- !u!65 &2325095571698136919
 BoxCollider:
@@ -2403,6 +2473,35 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 1.72, z: 0.3}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &1040215462268551144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3863946197356255772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c9594bc1fb22a4c976e3eda5838416, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCProfile
+  ShowTopMostFoldoutHeaderGroup: 1
+  _portrait: {fileID: 21300000, guid: 4c9c8978c33bf6040b565acf7b94b475, type: 3}
+  Gender: 2
+--- !u!114 &6252919535003354112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3863946197356255772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31f680f10fa38e94c948352e2a11d399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
+  _portraitCameraAnchor: {fileID: 6642747021636906664}
+  _portraitLookTarget: {fileID: 1005701913553346937}
 --- !u!1 &3973583028664309402
 GameObject:
   m_ObjectHideFlags: 0

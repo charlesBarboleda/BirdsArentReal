@@ -40,6 +40,7 @@ namespace InputSystem
         public event Action NextPerformed;
         public event Action DropPerformed;
         public event Action PickupPerformed;
+        public event Action ToggleCameraViewPerformed;
 
         bool _actionJumpHeld;
         bool _actionCrouchHeld;
@@ -103,6 +104,11 @@ namespace InputSystem
                         MoveInput = new Vector2(x, y).normalized;
                     }
                 }
+            }
+
+            if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+            {
+                ToggleCameraViewPerformed?.Invoke();
             }
 
             AscendInput = ascend;

@@ -2108,6 +2108,8 @@ GameObject:
   - component: {fileID: 4028913654014635639}
   - component: {fileID: 345901726462064106}
   - component: {fileID: 7821820430442991394}
+  - component: {fileID: 2184405424455192137}
+  - component: {fileID: -8073306754477456946}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Street_Male_01
   m_TagString: Untagged
@@ -2152,6 +2154,8 @@ Transform:
   - {fileID: 2691398275121414100}
   - {fileID: 6327658852991679714}
   - {fileID: 5006924001617512522}
+  - {fileID: 8464640902405825650}
+  - {fileID: 7636774047894445713}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &839548231683305454
@@ -2309,7 +2313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 1059866423
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 1059866423
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2317,7 +2321,7 @@ MonoBehaviour:
   SynchronizeTransform: 1
   m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -2407,6 +2411,10 @@ MonoBehaviour:
       NameHash: 209758592
       Synchronize: 1
       ParameterType: 4
+    - name: Splatter
+      NameHash: -1734143474
+      Synchronize: 1
+      ParameterType: 9
   AnimatorParametersExpanded: 0
 --- !u!65 &7821820430442991394
 BoxCollider:
@@ -2429,6 +2437,35 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 1.72, z: 0.3}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &2184405424455192137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3989931881015276717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c9594bc1fb22a4c976e3eda5838416, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCProfile
+  ShowTopMostFoldoutHeaderGroup: 1
+  _portrait: {fileID: 21300000, guid: 57df3f6326363644e88dc9d6157a3acd, type: 3}
+  Gender: 0
+--- !u!114 &-8073306754477456946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3989931881015276717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31f680f10fa38e94c948352e2a11d399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
+  _portraitCameraAnchor: {fileID: 8464640902405825650}
+  _portraitLookTarget: {fileID: 7636774047894445713}
 --- !u!1 &4052281235208858418
 GameObject:
   m_ObjectHideFlags: 0
@@ -4456,6 +4493,37 @@ Transform:
   - {fileID: 5175680289533292680}
   m_Father: {fileID: 8986148981044996411}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8047845475351776652
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7636774047894445713}
+  m_Layer: 0
+  m_Name: PortraitLookTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7636774047894445713
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8047845475351776652}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.633, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3443040568825440738}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8205778380318281868
 GameObject:
   m_ObjectHideFlags: 0
@@ -4946,6 +5014,37 @@ Transform:
   - {fileID: 7306317039498590042}
   - {fileID: 4371676423716280579}
   m_Father: {fileID: 7972255538448321771}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8497232794253561411
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8464640902405825650}
+  m_Layer: 0
+  m_Name: PortraitCameraAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8464640902405825650
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8497232794253561411}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.605, z: 0.7}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3443040568825440738}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8744107854941884344
 GameObject:

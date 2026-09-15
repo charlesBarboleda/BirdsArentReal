@@ -27,7 +27,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: 7658847740522758142}
-  m_RendererFeatureMap: ad6b866f10d7b46cfe7fa91271b1496al
+  - {fileID: 2773585343714733645}
+  m_RendererFeatureMap: ad6b866f10d7b46cfe7fa91271b1496a4dae58ce2cc17d26l
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -56,6 +57,21 @@ MonoBehaviour:
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
   m_TileOnlyMode: 0
+--- !u!114 &2773585343714733645
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28f5cca5997f5f5469881b83739b775b, type: 3}
+  m_Name: SecurityCameraRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::SecurityCameraRendererFeature
+  m_Active: 1
+  _shader: {fileID: 4800000, guid: a277345f9ae91a4408caf984536f42b1, type: 3}
+  _intensity: 1
 --- !u!114 &7658847740522758142
 MonoBehaviour:
   m_ObjectHideFlags: 1

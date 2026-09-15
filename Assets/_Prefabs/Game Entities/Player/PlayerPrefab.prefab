@@ -1,5 +1,52 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &127100150769902856
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5705973225759591722}
+  - component: {fileID: 7004341730708083685}
+  m_Layer: 0
+  m_Name: CameraTransitionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5705973225759591722
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 127100150769902856}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7004341730708083685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 127100150769902856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4ced5d949d24f542834049df6d3c246, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraTransitionController
+  ShowTopMostFoldoutHeaderGroup: 1
+  _transitionOverlay: {fileID: 0}
+  _transitionDuration: 0.15
 --- !u!1 &512173753905294239
 GameObject:
   m_ObjectHideFlags: 0
@@ -495,6 +542,9 @@ Transform:
   - {fileID: 7826175422011998743}
   - {fileID: 5797486343455334138}
   - {fileID: 7373962882979261095}
+  - {fileID: 7161977011708584361}
+  - {fileID: 5705973225759591722}
+  - {fileID: 7966582539974307416}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2818072530342899568
@@ -744,6 +794,37 @@ MonoBehaviour:
   _movementLocked: 0
   _currentSpeed: 7
   _currentVerticalSpeed: 0
+--- !u!1 &2735203107493453207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7161977011708584361}
+  m_Layer: 0
+  m_Name: FirstPersonCamera Anchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7161977011708584361
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2735203107493453207}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.243, z: 0.465}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2841546678461024925
 GameObject:
   m_ObjectHideFlags: 0
@@ -1538,6 +1619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b1f468356e8d604291f10924086e871, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitCameraFollow
+  ShowTopMostFoldoutHeaderGroup: 1
   _inputManager: {fileID: 0}
   _target: {fileID: 634458475031072594}
   _targetOffset: {x: 0, y: 0.25, z: 0}
@@ -1552,6 +1634,12 @@ MonoBehaviour:
   _distance: 2
   _positionFollowSpeed: 30
   _rotationFollowSpeed: 25
+  _firstPersonAnchor: {fileID: 7161977011708584361}
+  _crosshair: {fileID: 0}
+  _camera: {fileID: 1709349748054226010}
+  _thirdPersonFOV: 60
+  _firstPersonFOV: 75
+  _transitionController: {fileID: 7004341730708083685}
 --- !u!1 &5470110786451590169
 GameObject:
   m_ObjectHideFlags: 0
@@ -2434,3 +2522,57 @@ Transform:
   - {fileID: 3063277017503814321}
   m_Father: {fileID: 162069408361643925}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8762767643900507239
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7966582539974307416}
+  - component: {fileID: 1155825254528680913}
+  m_Layer: 0
+  m_Name: NPCProfileDetector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7966582539974307416
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8762767643900507239}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3509072481235273064}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1155825254528680913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8762767643900507239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f58d74c86970c084496eefedd5a53ac6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCProfileDetector
+  ShowTopMostFoldoutHeaderGroup: 1
+  _camera: {fileID: 1709349748054226010}
+  _uiController: {fileID: 0}
+  _maxDistance: 100
+  _detectionLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  _obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 512

@@ -193,19 +193,28 @@ public class DropObject : NetworkBehaviour
         State = DropState.Impacted;
 
         OnImpact?.Invoke(impactPoint);
+
         Collider[] hits = new Collider[32];
+
         int count = Physics.OverlapSphereNonAlloc(
             impactPoint,
             _splatterNPCReactionRadius,
             hits,
             _reactableLayers);
 
-        foreach (Collider hit in hits)
+        for (int i = 0; i < count; i++)
         {
+            Collider hit = hits[i];
+
+            if (hit == null)
+                continue;
+
             OnReactableHit?.Invoke(hit);
 
             if (hit.TryGetComponent(out ISplatterReactable reactable))
+            {
                 reactable.ReactToSplatter(impactPoint);
+            }
         }
 
         PlaySplatterEffectRpc(impactPoint, impactNormal);

@@ -237,6 +237,37 @@ Transform:
   - {fileID: 6454158996151013691}
   m_Father: {fileID: 4359181226965415127}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &431931489269986533
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2274161153591646902}
+  m_Layer: 0
+  m_Name: PortraitCameraAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2274161153591646902
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431931489269986533}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.605, z: 0.7}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 58371440716842366}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &443669417598808184
 GameObject:
   m_ObjectHideFlags: 0
@@ -1419,6 +1450,8 @@ GameObject:
   - component: {fileID: 8443854078707276183}
   - component: {fileID: -6721601958728050043}
   - component: {fileID: 929088127506685752}
+  - component: {fileID: -4754082699512846004}
+  - component: {fileID: -6754814509297262584}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Street_Male_02
   m_TagString: Untagged
@@ -1463,6 +1496,8 @@ Transform:
   - {fileID: 4931199475154128486}
   - {fileID: 4606780764992264653}
   - {fileID: 5066686357641282096}
+  - {fileID: 2274161153591646902}
+  - {fileID: 1728165471967596364}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &8157733199891967838
@@ -1620,7 +1655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 762240107
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 762240107
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1628,7 +1663,7 @@ MonoBehaviour:
   SynchronizeTransform: 1
   m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -1718,6 +1753,10 @@ MonoBehaviour:
       NameHash: 209758592
       Synchronize: 1
       ParameterType: 4
+    - name: Splatter
+      NameHash: -1734143474
+      Synchronize: 1
+      ParameterType: 9
   AnimatorParametersExpanded: 0
 --- !u!65 &929088127506685752
 BoxCollider:
@@ -1740,6 +1779,35 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 1.72, z: 0.3}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &-4754082699512846004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2601170466289135297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2c9594bc1fb22a4c976e3eda5838416, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCProfile
+  ShowTopMostFoldoutHeaderGroup: 1
+  _portrait: {fileID: 21300000, guid: f0044f3f22812ad438ca763743328af6, type: 3}
+  Gender: 0
+--- !u!114 &-6754814509297262584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2601170466289135297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31f680f10fa38e94c948352e2a11d399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
+  _portraitCameraAnchor: {fileID: 2274161153591646902}
+  _portraitLookTarget: {fileID: 1728165471967596364}
 --- !u!1 &2806668939008000343
 GameObject:
   m_ObjectHideFlags: 0
@@ -2736,6 +2804,37 @@ Transform:
   m_Children:
   - {fileID: 3941136988137066198}
   m_Father: {fileID: 4359181226965415127}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4106861167122958252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1728165471967596364}
+  m_Layer: 0
+  m_Name: PortraitLookTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1728165471967596364
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4106861167122958252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.633, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 58371440716842366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4119193318316996581
 GameObject:

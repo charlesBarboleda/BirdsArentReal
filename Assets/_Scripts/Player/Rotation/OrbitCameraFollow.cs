@@ -1,12 +1,20 @@
 using UnityEngine;
 using InputSystem;
+using System.Collections;
+using Unity.Netcode;
+
+public enum CameraViewMode
+{
+    ThirdPerson,
+    FirstPerson
+}
 
 /// <summary>
 /// Third-person orbit/chase camera with player-controlled look-around.
 /// Reads look input for itself only — never writes to Target or any gameplay
 /// state, so it cannot affect the thing it's following.
 /// </summary>
-public class OrbitCameraFollow : MonoBehaviour
+public class OrbitCameraFollow : NetworkBehaviour
 {
     [Header("References")]
     [SerializeField] InputManager _inputManager;
@@ -36,8 +44,26 @@ public class OrbitCameraFollow : MonoBehaviour
     [SerializeField] float _positionFollowSpeed = 30f;
     [SerializeField] float _rotationFollowSpeed = 25f;
 
+    [Header("First Person")]
+    [Tooltip("Empty child transform placed at the bird's eye position, facing forward.")]
+    [SerializeField] Transform _firstPersonAnchor;
+
+    [Header("Crosshair")]
+    [SerializeField] GameObject _crosshair;
+
+    [Header("Field of View")]
+    [SerializeField] Camera _camera;
+    [SerializeField] float _thirdPersonFOV = 60f;
+    [SerializeField] float _firstPersonFOV = 70f;
+
+    [Header("Camera Transition")]
+    [SerializeField] CameraTransitionController _transitionController;
+
     float _yawOffset;
     float _pitch;
+
+    CameraViewMode _viewMode = CameraViewMode.ThirdPerson;
+    public CameraViewMode ViewMode => _viewMode;
 
     public Transform Target { get => _target; set => _target = value; }
 
@@ -85,6 +111,12 @@ public class OrbitCameraFollow : MonoBehaviour
             Quaternion.Slerp(transform.rotation, rotation, rotT));
     }
 
+    public override void OnNetworkSpawn()
+    {
+        _crosshair = CrosshairUI.Instance.Crosshair;
+        _crosshair.SetActive(false);
+    }
+
     /// <summary>Snaps instantly to directly-behind the target and resets look offsets — call after (re)assigning Target.</summary>
     public void SnapToTarget()
     {
@@ -100,6 +132,14 @@ public class OrbitCameraFollow : MonoBehaviour
 
     (Vector3 position, Quaternion rotation) CalculateDesiredPose()
     {
+        if (_viewMode == CameraViewMode.FirstPerson && _firstPersonAnchor != null)
+        {
+            float fpYaw = _target.eulerAngles.y + _yawOffset;
+            Quaternion fpRotation = Quaternion.Euler(_pitch, fpYaw, 0f);
+            return (_firstPersonAnchor.position, fpRotation);
+        }
+
+        // --- existing third-person calculation below, unchanged ---
         float targetYaw = _target.eulerAngles.y + _yawOffset;
         float pitchRad = _pitch * Mathf.Deg2Rad;
         float horizontalDistance = _distance * Mathf.Cos(pitchRad);
@@ -112,5 +152,84 @@ public class OrbitCameraFollow : MonoBehaviour
         Quaternion desiredRotation = Quaternion.LookRotation((pivotPoint - desiredPosition).normalized, Vector3.up);
 
         return (desiredPosition, desiredRotation);
+    }
+
+    void OnEnable()
+    {
+        if (_inputManager == null) _inputManager = InputManager.Instance;
+        if (_inputManager != null) _inputManager.ToggleCameraViewPerformed += ToggleViewMode;
+    }
+
+    void OnDisable()
+    {
+        if (_inputManager != null) _inputManager.ToggleCameraViewPerformed -= ToggleViewMode;
+    }
+
+    public void ToggleViewMode()
+    {
+        if (_transitionController == null) return;
+        if (_transitionController.IsTransitioning) return;
+        StartCoroutine(ToggleViewModeRoutine());
+    }
+
+    IEnumerator ToggleViewModeRoutine()
+    {
+        CameraViewMode newMode =
+            _viewMode == CameraViewMode.ThirdPerson
+                ? CameraViewMode.FirstPerson
+                : CameraViewMode.ThirdPerson;
+
+        // Hide crosshair immediately when transition begins.
+        if (_crosshair != null)
+        {
+            _crosshair.SetActive(false);
+        }
+
+        yield return StartCoroutine(_transitionController.Expand());
+
+        SetViewMode(newMode);
+
+        if (SecurityCameraRendererFeature.Instance != null)
+        {
+            SecurityCameraRendererFeature.Instance.SetActive(
+                newMode == CameraViewMode.FirstPerson);
+        }
+
+        yield return StartCoroutine(_transitionController.Retract());
+
+        // Show crosshair after returning to first person.
+        if (newMode == CameraViewMode.FirstPerson && _crosshair != null)
+        {
+            _crosshair.SetActive(true);
+        }
+    }
+
+    public void SetViewMode(CameraViewMode mode)
+    {
+        if (mode == CameraViewMode.FirstPerson && _firstPersonAnchor == null)
+        {
+            Debug.LogWarning(
+                $"[{nameof(OrbitCameraFollow)}] No first-person anchor assigned on '{name}' - staying in third-person.",
+                this);
+
+            return;
+        }
+
+        _viewMode = mode;
+
+        bool isFirstPerson = mode == CameraViewMode.FirstPerson;
+
+        if (_camera != null)
+        {
+            _camera.fieldOfView =
+                isFirstPerson
+                    ? _firstPersonFOV
+                    : _thirdPersonFOV;
+        }
+
+        if (_crosshair != null)
+        {
+            _crosshair.SetActive(isFirstPerson);
+        }
     }
 }
