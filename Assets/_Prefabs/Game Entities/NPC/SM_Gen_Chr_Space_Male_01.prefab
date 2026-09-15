@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: -5701923721390723604}
   - component: {fileID: -8566725107960525587}
   - component: {fileID: 812849289895936447}
+  - component: {fileID: 4563997508849441582}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Space_Male_01
   m_TagString: Untagged
@@ -66,6 +67,7 @@ Transform:
   - {fileID: 4594338515235812204}
   - {fileID: 3314492955577801126}
   - {fileID: 3177633737896712283}
+  - {fileID: 8841967400800752480}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &7435924096584207201
@@ -376,6 +378,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
   _portraitCameraAnchor: {fileID: 3314492955577801126}
   _portraitLookTarget: {fileID: 3177633737896712283}
+  _profileUIAnchor: {fileID: 8841967400800752480}
+--- !u!114 &4563997508849441582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 85345772695510664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeda4050fde0134093f81afb848936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCOutline
+  _profile: {fileID: -8566725107960525587}
+  _outlineMaterial: {fileID: 2100000, guid: 20a4610efe313dc45a5d206ee314e13d, type: 2}
+  _outlineWidth: 0.1
 --- !u!1 &101297857120272763
 GameObject:
   m_ObjectHideFlags: 0
@@ -4515,6 +4533,37 @@ SkinnedMeshRenderer:
     m_Center: {x: 0.00000017881393, y: 0.8459296, z: -0.040206723}
     m_Extent: {x: 1.021204, y: 0.9425942, z: 0.23786652}
   m_DirtyAABB: 0
+--- !u!1 &7825585795834333051
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8841967400800752480}
+  m_Layer: 0
+  m_Name: ProfileUIAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8841967400800752480
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7825585795834333051}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1475106000792594674}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7943088880619880314
 GameObject:
   m_ObjectHideFlags: 0

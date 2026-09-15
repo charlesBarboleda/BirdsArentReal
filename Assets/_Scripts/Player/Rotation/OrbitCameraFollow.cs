@@ -115,6 +115,8 @@ public class OrbitCameraFollow : NetworkBehaviour
     {
         _crosshair = CrosshairUI.Instance.Crosshair;
         _crosshair.SetActive(false);
+
+        InputManager.Instance.SetOrbitCameraFollow(this);
     }
 
     /// <summary>Snaps instantly to directly-behind the target and resets look offsets — call after (re)assigning Target.</summary>

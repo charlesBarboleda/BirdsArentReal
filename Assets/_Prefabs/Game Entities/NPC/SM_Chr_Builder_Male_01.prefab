@@ -1450,6 +1450,7 @@ GameObject:
   - component: {fileID: 6079713453138675725}
   - component: {fileID: -2791636213744679879}
   - component: {fileID: -53808744787101500}
+  - component: {fileID: -2658524495670139999}
   m_Layer: 8
   m_Name: SM_Chr_Builder_Male_01
   m_TagString: Untagged
@@ -1482,6 +1483,7 @@ Transform:
   - {fileID: 4657911482437316}
   - {fileID: 6998197656761579398}
   - {fileID: 4614913378410481122}
+  - {fileID: 7954874813751432418}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &95806809404443106
@@ -1792,6 +1794,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
   _portraitCameraAnchor: {fileID: 6998197656761579398}
   _portraitLookTarget: {fileID: 4614913378410481122}
+  _profileUIAnchor: {fileID: 7954874813751432418}
+--- !u!114 &-2658524495670139999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1394367660995210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeda4050fde0134093f81afb848936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCOutline
+  _profile: {fileID: -2791636213744679879}
+  _outlineMaterial: {fileID: 2100000, guid: 20a4610efe313dc45a5d206ee314e13d, type: 2}
+  _outlineWidth: 0.1
 --- !u!1 &1437207578371770
 GameObject:
   m_ObjectHideFlags: 0
@@ -3238,6 +3256,37 @@ Transform:
   m_Children:
   - {fileID: 4328532149691510}
   m_Father: {fileID: 4342314841465382}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3203262036495176950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7954874813751432418}
+  m_Layer: 0
+  m_Name: ProfileUIAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7954874813751432418
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3203262036495176950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4179945073926268}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7599701643092050140
 GameObject:

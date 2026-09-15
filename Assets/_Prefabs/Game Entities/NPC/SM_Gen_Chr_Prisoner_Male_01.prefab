@@ -2108,6 +2108,37 @@ Transform:
   - {fileID: 6010200595383766926}
   m_Father: {fileID: 8198315818461451351}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3612209098030378372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 239037769924955265}
+  m_Layer: 0
+  m_Name: ProfileUIAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &239037769924955265
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3612209098030378372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4395839890816195731}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3730569896870398799
 GameObject:
   m_ObjectHideFlags: 0
@@ -4096,6 +4127,7 @@ GameObject:
   - component: {fileID: -6644846516573990966}
   - component: {fileID: -3019561958357599664}
   - component: {fileID: 2425832048974237432}
+  - component: {fileID: -1256817193884134139}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Prisoner_Male_01
   m_TagString: Untagged
@@ -4142,6 +4174,7 @@ Transform:
   - {fileID: 5933360569343764951}
   - {fileID: 8104329254123050086}
   - {fileID: 2757275983649029401}
+  - {fileID: 239037769924955265}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &7786949971037823963
@@ -4452,6 +4485,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
   _portraitCameraAnchor: {fileID: 8104329254123050086}
   _portraitLookTarget: {fileID: 2757275983649029401}
+  _profileUIAnchor: {fileID: 239037769924955265}
+--- !u!114 &-1256817193884134139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7229581758514280130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeda4050fde0134093f81afb848936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCOutline
+  _profile: {fileID: -3019561958357599664}
+  _outlineMaterial: {fileID: 2100000, guid: 20a4610efe313dc45a5d206ee314e13d, type: 2}
+  _outlineWidth: 0.1
 --- !u!1 &7326345812099856870
 GameObject:
   m_ObjectHideFlags: 0

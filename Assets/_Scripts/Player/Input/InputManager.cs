@@ -41,7 +41,9 @@ namespace InputSystem
         public event Action DropPerformed;
         public event Action PickupPerformed;
         public event Action ToggleCameraViewPerformed;
+        public event Action TryMarkNPC;
 
+        OrbitCameraFollow _orbitCameraFollow;
         bool _actionJumpHeld;
         bool _actionCrouchHeld;
 
@@ -109,6 +111,11 @@ namespace InputSystem
             if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
             {
                 ToggleCameraViewPerformed?.Invoke();
+            }
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && _orbitCameraFollow.ViewMode == CameraViewMode.FirstPerson)
+            {
+                TryMarkNPC?.Invoke();
             }
 
             AscendInput = ascend;
@@ -202,6 +209,11 @@ namespace InputSystem
         public void OnNext(InputAction.CallbackContext context)
         {
             if (context.performed) NextPerformed?.Invoke();
+        }
+
+        public void SetOrbitCameraFollow(OrbitCameraFollow orbitCameraFollow)
+        {
+            _orbitCameraFollow = orbitCameraFollow;
         }
     }
 }

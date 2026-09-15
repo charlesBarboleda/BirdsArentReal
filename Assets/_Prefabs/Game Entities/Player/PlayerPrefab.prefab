@@ -360,6 +360,7 @@ MonoBehaviour:
   _inputManager: {fileID: 0}
   _pickupPoint: {fileID: 3509072481235273064}
   _holdSocket: {fileID: 8849356413633942972}
+  _orbitCameraFollow: {fileID: 3835364280171477742}
   _dropCameraController: {fileID: 4609881784183655733}
   _cameraDeactivateDelayAfterImpact: 3
   _pickupRadius: 2
@@ -559,7 +560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1746324632
+  GlobalObjectIdHash: 2844019354
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -2567,8 +2568,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCProfileDetector
   ShowTopMostFoldoutHeaderGroup: 1
+  _inputManager: {fileID: 0}
   _camera: {fileID: 1709349748054226010}
   _uiController: {fileID: 0}
+  _orbitCameraFollow: {fileID: 3835364280171477742}
   _maxDistance: 100
   _detectionRadius: 1
   _detectionLayers:

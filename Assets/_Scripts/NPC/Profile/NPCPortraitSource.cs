@@ -8,8 +8,12 @@ public class NPCPortraitSource : MonoBehaviour
     [Header("Portrait Look Target")]
     [SerializeField] Transform _portraitLookTarget;
 
+    [Header("Profile UI")]
+    [SerializeField] Transform _profileUIAnchor;
+
     public Transform PortraitCameraAnchor => _portraitCameraAnchor;
     public Transform PortraitLookTarget => _portraitLookTarget;
+    public Transform ProfileUIAnchor => _profileUIAnchor;
 
 #if UNITY_EDITOR
     void OnValidate()
@@ -28,6 +32,14 @@ public class NPCPortraitSource : MonoBehaviour
 
             if (lookTarget != null)
                 _portraitLookTarget = lookTarget;
+        }
+
+        if (_profileUIAnchor == null)
+        {
+            Transform profileUIAnchor = transform.Find("ProfileUIAnchor");
+
+            if (profileUIAnchor != null) _profileUIAnchor = profileUIAnchor;
+
         }
     }
 #endif

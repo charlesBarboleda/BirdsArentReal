@@ -1,7 +1,14 @@
 fileFormatVersion: 2
 guid: 2dc7b382d25903545b405802eb2198ab
+AssetOrigin:
+  serializedVersion: 1
+  productId: 156819
+  packageName: POLYGON - Starter Pack - Art by Synty
+  packageVersion: 1.2.1
+  assetPath: Assets/Synty/PolygonStarter/Models/Characters.fbx
+  uploadId: 976804
 ModelImporter:
-  serializedVersion: 21300
+  serializedVersion: 24600
   internalIDToNameTable:
   - first:
       1: 100000
@@ -369,6 +376,7 @@ ModelImporter:
     materialName: 0
     materialSearch: 1
     materialLocation: 0
+    searchTexturesGlobally: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -376,10 +384,8 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'Take 001' has import animation warnings that might lower retargeting quality:\nNote: Activate translation DOF on avatar to improve retargeting quality.\n\t'Eyes' has translation animation that will be discarded.\n\t'Eyes' has scale animation that will be discarded.\n\t'Clavicle_L' has translation animation that will be discarded.\n\t'Clavicle_R' has translation animation that will be discarded.\n\t'UpperLeg_R' has translation animation that will be discarded.\n"
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -392,7 +398,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -400,6 +406,9 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
+    preBakeConvexCollisionMesh: 0
+    preBakeTriangleCollisionMesh: 0
+    importPhysicalCameras: 1
     importVisibility: 0
     importBlendShapes: 0
     importCameras: 0
@@ -417,6 +426,11 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    importUVs: -1
+    importVertexColors: 1
     meshOptimizationFlags: 1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -436,6 +450,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
+    calculateBlendshapeNormalsDeltaFromImportedNormals: 1
   referencedClips: []
   importAnimation: 0
   humanDescription:
@@ -1058,15 +1073,9 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
   remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 156819
-  packageName: POLYGON - Starter Pack - Art by Synty
-  packageVersion: 1.2.1
-  assetPath: Assets/Synty/PolygonStarter/Models/Characters.fbx
-  uploadId: 976804

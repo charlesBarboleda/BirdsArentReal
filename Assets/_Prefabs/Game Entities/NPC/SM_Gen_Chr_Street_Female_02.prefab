@@ -1453,6 +1453,37 @@ SkinnedMeshRenderer:
     m_Center: {x: 0.000000059604645, y: 0.8448696, z: -0.054018587}
     m_Extent: {x: 1.0245616, y: 0.9431815, z: 0.2865807}
   m_DirtyAABB: 0
+--- !u!1 &1604388990519636160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5268813331209655395}
+  m_Layer: 0
+  m_Name: ProfileUIAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5268813331209655395
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1604388990519636160}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7409336686427454245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1913316326706357109
 GameObject:
   m_ObjectHideFlags: 0
@@ -4896,6 +4927,7 @@ GameObject:
   - component: {fileID: -969513935762573067}
   - component: {fileID: 604907558974882992}
   - component: {fileID: -6742110353023662970}
+  - component: {fileID: -1105737262820970623}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Street_Female_02
   m_TagString: Untagged
@@ -4942,6 +4974,7 @@ Transform:
   - {fileID: 4568077178948171386}
   - {fileID: 2300109699259487737}
   - {fileID: 2054114009618709313}
+  - {fileID: 5268813331209655395}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &2086116701592482426
@@ -5252,6 +5285,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
   _portraitCameraAnchor: {fileID: 2300109699259487737}
   _portraitLookTarget: {fileID: 2054114009618709313}
+  _profileUIAnchor: {fileID: 5268813331209655395}
+--- !u!114 &-1105737262820970623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9064580088405009711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeda4050fde0134093f81afb848936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCOutline
+  _profile: {fileID: 604907558974882992}
+  _outlineMaterial: {fileID: 2100000, guid: 20a4610efe313dc45a5d206ee314e13d, type: 2}
+  _outlineWidth: 0.1
 --- !u!1 &9199811736847301435
 GameObject:
   m_ObjectHideFlags: 0

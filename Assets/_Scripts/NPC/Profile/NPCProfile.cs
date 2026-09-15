@@ -16,28 +16,150 @@ public class NPCProfile : NetworkBehaviour
     public string Personality { get; private set; }
     public int WantedLevel { get; private set; }
 
+    readonly NetworkList<ulong> _markedByClientIds =
+    new NetworkList<ulong>();
+
+    public bool IsMarked =>
+    _markedByClientIds.Count > 0;
+
     readonly NetworkVariable<int> _profileSeed =
         new NetworkVariable<int>();
+
+    readonly NetworkVariable<bool> _isMarked =
+new NetworkVariable<bool>(
+    false,
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Server);
+
+    public event System.Action<NPCProfile, bool> MarkedStateChanged;
+
+    bool _wasMarked;
 
     public override void OnNetworkSpawn()
     {
         _profileSeed.OnValueChanged += OnProfileSeedChanged;
 
+        _markedByClientIds.OnListChanged += OnMarkedByListChanged;
+
+        _wasMarked = IsMarked;
+
         if (IsServer)
         {
             GenerateProfileSeed();
+        }
+
+        if (_profileSeed.Value != 0)
+        {
+            GenerateProfile();
+        }
+
+        if (NPCProfileUIController.Instance != null)
+        {
+            NPCProfileUIController.Instance.RegisterProfile(this);
         }
     }
 
     public override void OnNetworkDespawn()
     {
         _profileSeed.OnValueChanged -= OnProfileSeedChanged;
+
+        _markedByClientIds.OnListChanged -= OnMarkedByListChanged;
+
+        if (NPCProfileUIController.Instance != null)
+        {
+            NPCProfileUIController.Instance.UnregisterProfile(this);
+        }
+    }
+
+    void OnMarkedByListChanged(
+     NetworkListEvent<ulong> changeEvent)
+    {
+        bool isMarked = IsMarked;
+
+        if (_wasMarked == isMarked)
+            return;
+
+        _wasMarked = isMarked;
+
+        MarkedStateChanged?.Invoke(
+            this,
+            isMarked);
+    }
+
+    public bool IsMarkedBy(ulong clientId)
+    {
+        return _markedByClientIds.Contains(clientId);
+    }
+
+    [Rpc(SendTo.Server)]
+    public void RequestToggleMarkRpc(
+     RpcParams rpcParams = default)
+    {
+        if (!IsServer)
+            return;
+
+        ulong clientId =
+            rpcParams.Receive.SenderClientId;
+
+        if (IsMarkedBy(clientId))
+        {
+            RemoveMark(clientId);
+            return;
+        }
+
+        if (GetPlayerMarkCount(clientId) >= 3)
+            return;
+
+        AddMark(clientId);
+    }
+
+    int GetPlayerMarkCount(ulong clientId)
+    {
+        int count = 0;
+
+        NPCProfile[] profiles =
+            FindObjectsByType<NPCProfile>();
+
+        foreach (NPCProfile profile in profiles)
+        {
+            if (profile.IsMarkedBy(clientId))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    void AddMark(ulong clientId)
+    {
+        if (_markedByClientIds.Contains(clientId))
+            return;
+
+        _markedByClientIds.Add(clientId);
+    }
+
+    void RemoveMark(ulong clientId)
+    {
+        if (!_markedByClientIds.Contains(clientId))
+            return;
+
+        _markedByClientIds.Remove(clientId);
     }
 
     void OnProfileSeedChanged(int previousSeed, int newSeed)
     {
         GenerateProfile();
     }
+
+    public void SetMarked(bool marked)
+    {
+        if (!IsServer)
+            return;
+
+        _isMarked.Value = marked;
+    }
+
     void GenerateProfileSeed()
     {
         _profileSeed.Value = Random.Range(

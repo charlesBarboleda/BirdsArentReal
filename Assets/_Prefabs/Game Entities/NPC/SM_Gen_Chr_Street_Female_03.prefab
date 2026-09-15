@@ -541,6 +541,37 @@ Transform:
   - {fileID: 8047008316563668411}
   m_Father: {fileID: 1517921423542167969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &991928923799524774
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6615888987619375987}
+  m_Layer: 0
+  m_Name: ProfileUIAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6615888987619375987
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991928923799524774}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6936365892841279929}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1178981487701885835
 GameObject:
   m_ObjectHideFlags: 0
@@ -2071,6 +2102,7 @@ GameObject:
   - component: {fileID: -1965775998170612467}
   - component: {fileID: 3858946149922708687}
   - component: {fileID: 7255057949298423274}
+  - component: {fileID: -4131148660353243270}
   m_Layer: 8
   m_Name: SM_Gen_Chr_Street_Female_03
   m_TagString: Untagged
@@ -2117,6 +2149,7 @@ Transform:
   - {fileID: 3074927044890952908}
   - {fileID: 685335366415328286}
   - {fileID: 525235046617267909}
+  - {fileID: 6615888987619375987}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &6342454644329998674
@@ -2427,6 +2460,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCPortraitSource
   _portraitCameraAnchor: {fileID: 685335366415328286}
   _portraitLookTarget: {fileID: 525235046617267909}
+  _profileUIAnchor: {fileID: 6615888987619375987}
+--- !u!114 &-4131148660353243270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3779599460037819802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aeda4050fde0134093f81afb848936e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCOutline
+  _profile: {fileID: 3858946149922708687}
+  _outlineMaterial: {fileID: 2100000, guid: 20a4610efe313dc45a5d206ee314e13d, type: 2}
+  _outlineWidth: 0.1
 --- !u!1 &3842215722032356258
 GameObject:
   m_ObjectHideFlags: 0

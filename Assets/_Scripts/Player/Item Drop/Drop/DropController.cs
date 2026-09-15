@@ -21,10 +21,12 @@ public class DropController : NetworkBehaviour, IInitializable
     [SerializeField] InputManager _inputManager;
     [SerializeField] Transform _pickupPoint;
     [SerializeField] Transform _holdSocket;
+    [SerializeField] OrbitCameraFollow _orbitCameraFollow;
 
     [Header("Drop Camera")]
     [SerializeField] DropCameraController _dropCameraController;
     [SerializeField] float _cameraDeactivateDelayAfterImpact = 1.5f;
+
     DropObject _cameraTrackedObject;
     ulong _cameraTrackedClientId;
 
@@ -50,18 +52,19 @@ public class DropController : NetworkBehaviour, IInitializable
     public DropObject HeldObject => _heldObject;
 
     public bool IsHolding => _heldObject != null;
+    bool IsFirstPerson => _orbitCameraFollow != null && _orbitCameraFollow.ViewMode == CameraViewMode.FirstPerson;
 
     DropObject _heldObject;
     float _nextPoopTime;
 
     public override void OnNetworkSpawn()
     {
+        if (!IsOwner) return;
+
         _ = InitializeAsync();
 
-        if (IsOwner)
-        {
-            _dropCameraController.InitializeForLocalOwner();
-        }
+        _dropCameraController.InitializeForLocalOwner();
+
     }
 
     public override void OnNetworkDespawn()
@@ -70,6 +73,7 @@ public class DropController : NetworkBehaviour, IInitializable
         {
             _inputManager.PickupPerformed -= HandlePickupPerformed;
             _inputManager.DropPerformed -= HandleDropPerformed;
+
         }
 
         if (IsOwner)
@@ -82,11 +86,13 @@ public class DropController : NetworkBehaviour, IInitializable
 
     void HandlePickupPerformed()
     {
+        if (IsFirstPerson) return;
         RequestPickupRpc();
     }
 
     void HandleDropPerformed()
     {
+        if (IsFirstPerson) return;
         RequestDropRpc();
     }
 
@@ -126,11 +132,6 @@ public class DropController : NetworkBehaviour, IInitializable
             droppedObjectReference = TryDropPoop();
         }
 
-        // The drop may have failed, for example:
-        // - No held object
-        // - Poop cooldown
-        // - Missing prefab
-        // - Spawn failure
         if (!droppedObjectReference.TryGet(
                 out NetworkObject droppedNetworkObject))
         {
@@ -141,15 +142,18 @@ public class DropController : NetworkBehaviour, IInitializable
             droppedNetworkObject.GetComponent<DropObject>();
 
         if (droppedObject == null)
-            return;
+        {
+            Debug.LogWarning(
+                "[DropController] Dropped NetworkObject has no DropObject component.",
+                this);
 
-        // Track this object's impact on the server.
+            return;
+        }
+
         RegisterCameraTracking(
             droppedObject,
             senderClientId);
 
-        // Tell ONLY the player who requested the drop
-        // to activate their local camera.
         ActivateDropCameraRpc(
             droppedObjectReference,
             RpcTarget.Single(

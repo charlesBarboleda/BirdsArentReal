@@ -21,4 +21,12 @@ public class AddPortraitCameraAnchor : MonoBehaviour
         lookTarget.transform.SetLocalPositionAndRotation(new Vector3(0f, y, 0f), Quaternion.identity);
 
     }
+
+    [ContextMenu("Add Profile UI Anchor")]
+    public void AddProfileUIAnchor()
+    {
+        GameObject anchor = new("ProfileUIAnchor");
+        anchor.transform.SetParent(transform);
+        anchor.transform.SetLocalPositionAndRotation(new Vector3(0f, 2f, 0f), Quaternion.identity);
+    }
 }
