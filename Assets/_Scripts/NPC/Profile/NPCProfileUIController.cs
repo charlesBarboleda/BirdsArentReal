@@ -1,5 +1,4 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
 
 public class NPCProfileUIController : MonoBehaviour
@@ -8,12 +7,12 @@ public class NPCProfileUIController : MonoBehaviour
 
     [SerializeField] GameObject _panel;
     [SerializeField] Image _portrait;
-    [SerializeField] TMP_Text _nameText;
-    [SerializeField] TMP_Text _ageText;
-    [SerializeField] TMP_Text _dateOfBirthText;
-    [SerializeField] TMP_Text _occupationText;
-    [SerializeField] TMP_Text _personalityText;
-    [SerializeField] TMP_Text _wantedLevelText;
+    [SerializeField] DecryptingText _nameText;
+    [SerializeField] DecryptingText _ageText;
+    [SerializeField] DecryptingText _dateOfBirthText;
+    [SerializeField] DecryptingText _occupationText;
+    [SerializeField] DecryptingText _personalityText;
+    [SerializeField] DecryptingText _wantedLevelText;
 
     void Awake()
     {
@@ -31,16 +30,24 @@ public class NPCProfileUIController : MonoBehaviour
         _panel.SetActive(true);
 
         _portrait.sprite = profile.Portrait;
-        _nameText.text = profile.FullName;
-        _ageText.text = $"Age: {profile.Age}";
-        _dateOfBirthText.text = $"DOB: {profile.DateOfBirth}";
-        _occupationText.text = $"Occupation: {profile.Occupation}";
-        _personalityText.text = $"Personality: {profile.Personality}";
-        _wantedLevelText.text = $"Wanted Level: {profile.WantedLevel}";
+
+        _nameText.Play(profile.FullName);
+        _ageText.Play(profile.Age.ToString());
+        _dateOfBirthText.Play(profile.DateOfBirth);
+        _occupationText.Play(profile.Occupation);
+        _personalityText.Play(profile.Personality);
+        _wantedLevelText.Play(profile.WantedLevel.ToString());
     }
 
     public void Hide()
     {
+        _nameText.Stop();
+        _ageText.Stop();
+        _dateOfBirthText.Stop();
+        _occupationText.Stop();
+        _personalityText.Stop();
+        _wantedLevelText.Stop();
+
         _panel.SetActive(false);
     }
 }

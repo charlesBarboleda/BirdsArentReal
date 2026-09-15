@@ -5,6 +5,7 @@ public class NPCProfile : NetworkBehaviour
 {
     [Header("Portrait")]
     [SerializeField] Sprite _portrait;
+
     public Sprite Portrait => _portrait;
 
     public string FullName { get; private set; }
@@ -15,81 +16,185 @@ public class NPCProfile : NetworkBehaviour
     public string Personality { get; private set; }
     public int WantedLevel { get; private set; }
 
+    readonly NetworkVariable<int> _profileSeed =
+        new NetworkVariable<int>();
+
     public override void OnNetworkSpawn()
     {
-        RandomizeProfile();
+        _profileSeed.OnValueChanged += OnProfileSeedChanged;
+
+        if (IsServer)
+        {
+            GenerateProfileSeed();
+        }
     }
 
-    void RandomizeProfile()
+    public override void OnNetworkDespawn()
     {
-        FullName = $"{RandomizedFirstName(Gender)} {RandomizedLastName()}";
-        DateOfBirth = RandomizedDateOfBirth(out int age);
+        _profileSeed.OnValueChanged -= OnProfileSeedChanged;
+    }
+
+    void OnProfileSeedChanged(int previousSeed, int newSeed)
+    {
+        GenerateProfile();
+    }
+    void GenerateProfileSeed()
+    {
+        _profileSeed.Value = Random.Range(
+            int.MinValue,
+            int.MaxValue);
+    }
+
+    void GenerateProfile()
+    {
+        Random.State previousState = Random.state;
+
+        Random.InitState(_profileSeed.Value);
+
+        FullName = GenerateFullName();
+        DateOfBirth = GenerateDateOfBirth(out int age);
         Age = age;
-        Occupation = RandomizedOccupation();
-        Personality = RandomizedPersonality();
+        Occupation = GenerateOccupation();
+        Personality = GeneratePersonality();
+
         WantedLevel = 0;
+
+        Random.state = previousState;
     }
 
-    public void SetWantedLevel(int level)
+    string GenerateFullName()
     {
-        WantedLevel = Mathf.Clamp(level, 0, 5);
+        string firstName = RandomizedFirstName(Gender);
+        string lastName = RandomizedLastName();
+
+        return $"{firstName} {lastName}";
     }
 
-    string RandomizedPersonality()
+    string GenerateDateOfBirth(out int age)
     {
-        PersonalityTraits[] traits = (PersonalityTraits[])System.Enum.GetValues(typeof(PersonalityTraits));
-        return traits[Random.Range(0, traits.Length)].ToString();
-    }
+        age = Random.Range(18, 66);
 
-    string RandomizedOccupation()
-    {
-        Occupations[] occupations = (Occupations[])System.Enum.GetValues(typeof(Occupations));
-        return occupations[Random.Range(0, occupations.Length)].ToString();
-    }
+        int currentYear = System.DateTime.Now.Year;
 
-    string RandomizedDateOfBirth(out int age)
-    {
-        int year = Random.Range(1970, 2005);
+        int birthYear = currentYear - age;
+
         int month = Random.Range(1, 13);
-        int day = Random.Range(1, 29); // Simplified to avoid month length issues
-        age = Time.timeSinceLevelLoad > 0 ? Random.Range(18, 65) : 0;
-        return $"{year}-{month:D2}-{day:D2}";
+        int day = Random.Range(1, 29);
+
+        return $"{birthYear}-{month:D2}-{day:D2}";
+    }
+
+    string GeneratePersonality()
+    {
+        PersonalityTraits[] traits =
+            (PersonalityTraits[])System.Enum.GetValues(
+                typeof(PersonalityTraits));
+
+        return FormatEnumText(
+            traits[Random.Range(0, traits.Length)].ToString());
+    }
+
+    string GenerateOccupation()
+    {
+        Occupations[] occupations =
+            (Occupations[])System.Enum.GetValues(
+                typeof(Occupations));
+
+        return FormatEnumText(
+            occupations[Random.Range(0, occupations.Length)].ToString());
     }
 
     string RandomizedLastName()
     {
-        LastNames[] lastNames = (LastNames[])System.Enum.GetValues(typeof(LastNames));
-        return lastNames[Random.Range(0, lastNames.Length)].ToString();
+        LastNames[] lastNames =
+            (LastNames[])System.Enum.GetValues(
+                typeof(LastNames));
+
+        return lastNames[
+            Random.Range(0, lastNames.Length)
+        ].ToString();
     }
 
     string RandomizedFirstName(Gender gender)
     {
         if (gender == Gender.Male)
         {
-            MaleNames[] maleNames = (MaleNames[])System.Enum.GetValues(typeof(MaleNames));
-            return maleNames[Random.Range(0, maleNames.Length)].ToString();
+            MaleNames[] maleNames =
+                (MaleNames[])System.Enum.GetValues(
+                    typeof(MaleNames));
+
+            return maleNames[
+                Random.Range(0, maleNames.Length)
+            ].ToString();
         }
-        else if (gender == Gender.Female)
+
+        if (gender == Gender.Female)
         {
-            FemaleNames[] femaleNames = (FemaleNames[])System.Enum.GetValues(typeof(FemaleNames));
-            return femaleNames[Random.Range(0, femaleNames.Length)].ToString();
+            FemaleNames[] femaleNames =
+                (FemaleNames[])System.Enum.GetValues(
+                    typeof(FemaleNames));
+
+            return femaleNames[
+                Random.Range(0, femaleNames.Length)
+            ].ToString();
         }
-        else
+
+        MaleNames[] male =
+            (MaleNames[])System.Enum.GetValues(
+                typeof(MaleNames));
+
+        FemaleNames[] female =
+            (FemaleNames[])System.Enum.GetValues(
+                typeof(FemaleNames));
+
+        string[] combinedNames =
+            new string[male.Length + female.Length];
+
+        for (int i = 0; i < male.Length; i++)
         {
-            // For non-binary, we can choose from both male and female names or create a separate list. Here, we'll just combine both for simplicity. 
-            MaleNames[] maleNames = (MaleNames[])System.Enum.GetValues(typeof(MaleNames));
-            FemaleNames[] femaleNames = (FemaleNames[])System.Enum.GetValues(typeof(FemaleNames));
-            string[] combinedNames = new string[maleNames.Length + femaleNames.Length];
-            for (int i = 0; i < maleNames.Length; i++)
-            {
-                combinedNames[i] = maleNames[i].ToString();
-            }
-            for (int i = 0; i < femaleNames.Length; i++)
-            {
-                combinedNames[maleNames.Length + i] = femaleNames[i].ToString();
-            }
-            return combinedNames[Random.Range(0, combinedNames.Length)];
+            combinedNames[i] = male[i].ToString();
         }
+
+        for (int i = 0; i < female.Length; i++)
+        {
+            combinedNames[male.Length + i] =
+                female[i].ToString();
+        }
+
+        return combinedNames[
+            Random.Range(0, combinedNames.Length)
+        ];
+    }
+
+    public void SetWantedLevel(int level)
+    {
+        if (!IsServer)
+            return;
+
+        WantedLevel = Mathf.Clamp(level, 0, 5);
+    }
+
+    string FormatEnumText(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        System.Text.StringBuilder result =
+            new System.Text.StringBuilder();
+
+        for (int i = 0; i < value.Length; i++)
+        {
+            char character = value[i];
+
+            if (i > 0 && char.IsUpper(character))
+            {
+                result.Append(' ');
+            }
+
+            result.Append(character);
+        }
+
+        return result.ToString();
     }
 }
 
@@ -104,7 +209,44 @@ public enum PersonalityTraits
     Ambitious,
     Creative,
     Honest,
-    Deceptive
+    Deceptive,
+
+    Calm,
+    Nervous,
+    Confident,
+    Pessimistic,
+    Optimistic,
+    Sarcastic,
+    Serious,
+    Playful,
+    Curious,
+    Suspicious,
+    Patient,
+    Impatient,
+    Generous,
+    Selfish,
+    Loyal,
+    Unreliable,
+    Polite,
+    Rude,
+    Charismatic,
+    Awkward,
+    Stubborn,
+    Reckless,
+    Cautious,
+    Secretive,
+    Talkative,
+    Quiet,
+    Compassionate,
+    Arrogant,
+    Humble,
+    Competitive,
+    Relaxed,
+    Paranoid,
+    Resourceful,
+    Forgetful,
+    Disciplined,
+    Careless
 }
 
 public enum Occupations
@@ -118,21 +260,52 @@ public enum Occupations
     Chef,
     Athlete,
     Scientist,
-    Entrepreneur
-}
+    Entrepreneur,
 
-public enum LastNames
-{
-    Smith,
-    Johnson,
-    Williams,
-    Brown,
-    Jones,
-    Garcia,
-    Miller,
-    Davis,
-    Rodriguez,
-    Martinez
+    Accountant,
+    Architect,
+    Lawyer,
+    Journalist,
+    Photographer,
+    Mechanic,
+    Electrician,
+    Plumber,
+    Carpenter,
+    ConstructionWorker,
+    PoliceOfficer,
+    Firefighter,
+    Paramedic,
+    SecurityGuard,
+    Detective,
+    Pilot,
+    Driver,
+    TaxiDriver,
+    DeliveryDriver,
+    SoftwareDeveloper,
+    GraphicDesigner,
+    Barber,
+    Hairdresser,
+    Waiter,
+    Bartender,
+    StoreClerk,
+    Cashier,
+    Farmer,
+    Fisherman,
+    Veterinarian,
+    Pharmacist,
+    Dentist,
+    Nurse,
+    Psychologist,
+    RealEstateAgent,
+    Salesperson,
+    BusinessOwner,
+    Receptionist,
+    Librarian,
+    Researcher,
+    Professor,
+    Student,
+    Unemployed,
+    Retired
 }
 
 public enum FemaleNames
@@ -146,7 +319,67 @@ public enum FemaleNames
     Charlotte,
     Amelia,
     Harper,
-    Evelyn
+    Evelyn,
+
+    Abigail,
+    Emily,
+    Elizabeth,
+    Sofia,
+    Avery,
+    Ella,
+    Scarlett,
+    Victoria,
+    Aria,
+    Grace,
+    Chloe,
+    Camila,
+    Penelope,
+    Riley,
+    Layla,
+    Lillian,
+    Nora,
+    Zoey,
+    Mila,
+    Aubrey,
+    Hannah,
+    Lily,
+    Addison,
+    Eleanor,
+    Natalie,
+    Luna,
+    Savannah,
+    Brooklyn,
+    Leah,
+    Hazel,
+    Violet,
+    Aurora,
+    Ellie,
+    Stella,
+    Claire,
+    Lucy,
+    Anna,
+    Maya,
+    Naomi,
+    Elena,
+    Caroline,
+    Alice,
+    Sarah,
+    Julia,
+    Madeline,
+    Sophie,
+    Eva,
+    Ruby,
+    Clara,
+    Katherine,
+    Lydia,
+    Jasmine,
+    Rose,
+    Allison,
+    Maria,
+    Jade,
+    Valerie,
+    Cora,
+    Vivian
 }
 
 public enum MaleNames
@@ -160,7 +393,238 @@ public enum MaleNames
     Benjamin,
     Lucas,
     Henry,
-    Alexander
+    Alexander,
+
+    Mason,
+    Michael,
+    Ethan,
+    Daniel,
+    Jacob,
+    Logan,
+    Jackson,
+    Levi,
+    Sebastian,
+    Mateo,
+    Jack,
+    Owen,
+    Theodore,
+    Aiden,
+    Samuel,
+    Joseph,
+    John,
+    David,
+    Wyatt,
+    Matthew,
+    Luke,
+    Asher,
+    Carter,
+    Julian,
+    Grayson,
+    Leo,
+    Jayden,
+    Gabriel,
+    Isaac,
+    Lincoln,
+    Anthony,
+    Hudson,
+    Dylan,
+    Ezra,
+    Thomas,
+    Charles,
+    Christopher,
+    Jaxon,
+    Maverick,
+    Josiah,
+    Andrew,
+    Elias,
+    Joshua,
+    Nathan,
+    Caleb,
+    Ryan,
+    Adrian,
+    Miles,
+    Nolan,
+    Christian,
+    Aaron,
+    Cameron,
+    Ezekiel,
+    Colton,
+    Luca,
+    Landon,
+    Hunter,
+    Jonathan,
+    Connor,
+    Santiago
+}
+
+public enum LastNames
+{
+    Smith,
+    Johnson,
+    Williams,
+    Brown,
+    Jones,
+    Garcia,
+    Miller,
+    Davis,
+    Rodriguez,
+    Martinez,
+    Anderson,
+    Taylor,
+    Thomas,
+    Moore,
+    Jackson,
+    Martin,
+    Lee,
+    Perez,
+    Thompson,
+    White,
+    Harris,
+    Sanchez,
+    Clark,
+    Ramirez,
+    Lewis,
+    Robinson,
+    Walker,
+    Young,
+    Allen,
+    King,
+    Wright,
+    Scott,
+    Torres,
+    Nguyen,
+    Hill,
+    Flores,
+    Green,
+    Adams,
+    Nelson,
+    Baker,
+    Hall,
+    Rivera,
+    Campbell,
+    Mitchell,
+    Carter,
+    Roberts,
+    Gomez,
+    Phillips,
+    Evans,
+    Turner,
+    Diaz,
+    Parker,
+    Cruz,
+    Edwards,
+    Collins,
+    Reyes,
+    Stewart,
+    Morris,
+    Morales,
+    Murphy,
+    Cook,
+    Rogers,
+    Gutierrez,
+    Ortiz,
+    Morgan,
+    Cooper,
+    Peterson,
+    Bailey,
+    Reed,
+    Kelly,
+    Howard,
+    Ramos,
+    Kim,
+    Cox,
+    Ward,
+    Richardson,
+    Watson,
+    Brooks,
+    Chavez,
+    Wood,
+    James,
+    Bennett,
+    Gray,
+    Mendoza,
+    Ruiz,
+    Hughes,
+    Price,
+    Alvarez,
+    Castillo,
+    Sanders,
+    Patel,
+    Myers,
+    Long,
+    Ross,
+    Foster,
+    Jimenez,
+    Powell,
+    Jenkins,
+    Perry,
+    Russell,
+    Sullivan,
+    Bell,
+    Coleman,
+    Butler,
+    Henderson,
+    Barnes,
+    Fisher,
+    Vasquez,
+    Simmons,
+    Romero,
+    Jordan,
+    Patterson,
+    Alexander,
+    Hamilton,
+    Graham,
+    Reynolds,
+    Griffin,
+    Wallace,
+    Moreno,
+    West,
+    Cole,
+    Hayes,
+    Bryant,
+    Herrera,
+    Gibson,
+    Ellis,
+    Tran,
+    Medina,
+    Aguilar,
+    Stevens,
+    Murray,
+    Ford,
+    Castro,
+    Marshall,
+    Owens,
+    Harrison,
+    Fernandez,
+    McDonald,
+    Woods,
+    Washington,
+    Kennedy,
+    Wells,
+    Vargas,
+    Henry,
+    Chen,
+    Freeman,
+    Webb,
+    Tucker,
+    Guzman,
+    Burns,
+    Crawford,
+    Olson,
+    Simpson,
+    Porter,
+    Hunter,
+    Gordon,
+    Mendez,
+    Silva,
+    Shaw,
+    Snyder,
+    Mason,
+    Dixon,
+    Munoz,
+    Hunt,
+    Hicks,
+    Holmes
 }
 
 public enum Gender
