@@ -41,7 +41,8 @@ namespace InputSystem
         public event Action DropPerformed;
         public event Action PickupPerformed;
         public event Action ToggleCameraViewPerformed;
-        public event Action TryMarkNPC;
+        public event Action MarkStarted;
+        public event Action MarkCanceled;
 
         OrbitCameraFollow _orbitCameraFollow;
         bool _actionJumpHeld;
@@ -113,11 +114,6 @@ namespace InputSystem
                 ToggleCameraViewPerformed?.Invoke();
             }
 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && _orbitCameraFollow.ViewMode == CameraViewMode.FirstPerson)
-            {
-                TryMarkNPC?.Invoke();
-            }
-
             AscendInput = ascend;
             DescendInput = descend;
         }
@@ -159,6 +155,8 @@ namespace InputSystem
                 PickupPerformed?.Invoke();
             }
         }
+
+
 
         public void OnJump(InputAction.CallbackContext context)
         {
@@ -214,6 +212,20 @@ namespace InputSystem
         public void SetOrbitCameraFollow(OrbitCameraFollow orbitCameraFollow)
         {
             _orbitCameraFollow = orbitCameraFollow;
+        }
+
+        public void OnMark(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                Debug.Log("Mark started");
+                MarkStarted?.Invoke();
+            }
+            else if (context.canceled)
+            {
+                Debug.Log("Mark canceled");
+                MarkCanceled?.Invoke();
+            }
         }
     }
 }
